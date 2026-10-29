@@ -10,7 +10,7 @@ import subprocess
 repo=Path(__file__).resolve().parents[1]
 image=repo/'output/images/airlunix-0.3.0-headless-server-a733.img'
 compressed=image.with_suffix('.img.xz')
-source_revision='d53541e872603788ab2f14014f596a54035ae46e'
+source_revision='d8b88a3b017a9db1795f687ff666f3eaf14ca253'
 runtime=repo/'output/images/airlunix-0.3.0-runtime.cpio.gz'
 raw=gzip.decompress(runtime.read_bytes());files={};offset=0
 while True:
@@ -74,7 +74,7 @@ for name,(_,data) in files.items():
     if name.endswith(('vipcore.ko','libVIPhal.so','libNBGlinker.so','opi-vpm-run','network_binary.nb','input_0.dat')):
         npu.append({'file':name,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest(),
                     'validation':'image presence/hash only; hardware execution not tested on this candidate'})
-tested_root=repo/'build/airlunix-build.bGtP0g/rootfs'
+tested_root=repo/'build/airlunix-build.SMKfOk/rootfs'
 target_matches=[]
 for name,(mode,data) in files.items():
     if mode&0o170000==0o100000 and (name.startswith('usr/lib/python3.14/') or name.startswith('usr/lib/libpython3.14') or name=='usr/bin/python3.14'):
@@ -94,6 +94,7 @@ result={'status':'private developer-preview candidate; not accepted or cleared f
     'board_ram_requirement':'new candidate not booted on board; minimum unmeasured',
     'console_included':True,'console_source_runtime_matches':matched,
     'target_python_image_file_matches':len(target_matches),
+    'largest_runtime_files':[{'file':name,'bytes':len(entry[1])} for name,entry in sorted(files.items(),key=lambda item:len(item[1][1]),reverse=True)[:12]],
     'locked_inputs':inputs,'npu_components':npu,'branding_scan':'no prior product marketing references in inspected user-facing runtime paths; legal notices retained',
     'raw_size_delta_vs_previous_base':0,'runtime_cpio_delta_vs_previous_base':len(raw)-172524544,
     'runtime_gzip_delta_vs_previous_base':runtime.stat().st_size-56706640,

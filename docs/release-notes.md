@@ -24,3 +24,8 @@ NPU support remains intended; public binary redistribution is pending verificati
 
 Application-specific readiness is outside the base release acceptance. No
 application will be installed solely to manufacture a readiness result.
+
+The earlier base-system observation was interrupted by an accidental power
+disconnect confirmed by the owner. Earlier exported samples remain valid for
+their observation period; they do not constitute a complete 24-hour result.
+No console deployment was made to that board.

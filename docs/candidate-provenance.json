@@ -1,26 +1,26 @@
 {
   "status": "private developer-preview candidate; not accepted or cleared for publication",
-  "source_revision": "d53541e872603788ab2f14014f596a54035ae46e",
+  "source_revision": "d8b88a3b017a9db1795f687ff666f3eaf14ca253",
   "source_relation": "Build-input source bytes match committed source; retrospective recording after assembly, not a signed at-build attestation",
-  "build_id": "1024caf2bfcfeb72",
+  "build_id": "9a51c51c0bf8a03b",
   "artifacts": [
     {
       "file": "airlunix-0.3.0-headless-server-a733.img",
       "bytes": 805306368,
       "MiB": 768.0,
-      "sha256": "b90ccf5fbba2ba6737fa4ad77080bc682c9047a08be60576fa0d57f78c8430dc"
+      "sha256": "718af92d55d98a7826e11f7cb119f38a6bd7e951f8ce143bf5de41a839108972"
     },
     {
       "file": "airlunix-0.3.0-headless-server-a733.img.xz",
-      "bytes": 65673328,
-      "MiB": 62.63096618652344,
-      "sha256": "e36e1f57becb30e6411b1f536687839acc16997af8d180e0199c61ae47e5349f"
+      "bytes": 65678972,
+      "MiB": 62.636348724365234,
+      "sha256": "502c4567ffb32cfbec494d5632f37c229198d3f4caecb05dc4f8bed3d6c4582f"
     },
     {
       "file": "airlunix-0.3.0-runtime.cpio.gz",
-      "bytes": 57291043,
-      "MiB": 54.636996269226074,
-      "sha256": "403856e964c077727e3e65b8febd75dd697957c4d8a39243045ca2374c56e19c"
+      "bytes": 57290922,
+      "MiB": 54.63688087463379,
+      "sha256": "a8c46d804e4b6200688998ae975628db6692145349f75e68c5139077e1edf065"
     }
   ],
   "compression": "XZ, xz -T2 -6 -k; raw image retained",
@@ -95,6 +95,56 @@
     }
   ],
   "target_python_image_file_matches": 2136,
+  "largest_runtime_files": [
+    {
+      "file": "lib/modules/6.6.98-sun60iw2/kernel/bsp/drivers/net/wireless/aic8800/aic8800_fdrv/aic8800_fdrv.ko",
+      "bytes": 14858072
+    },
+    {
+      "file": "lib/modules/6.6.98-sun60iw2/kernel/net/netfilter/nf_tables.ko",
+      "bytes": 11696128
+    },
+    {
+      "file": "lib/modules/6.6.98-sun60iw2/kernel/bsp/drivers/vin/vin_v4l2.ko",
+      "bytes": 7156048
+    },
+    {
+      "file": "lib/modules/6.6.98-sun60iw2/kernel/net/netfilter/nf_conntrack.ko",
+      "bytes": 5604440
+    },
+    {
+      "file": "usr/lib/libpython3.14.so.1.0",
+      "bytes": 5361888
+    },
+    {
+      "file": "lib/modules/6.6.98-sun60iw2/kernel/bsp/drivers/npu/aw_nna_vip/vip2/vipcore.ko",
+      "bytes": 4722448
+    },
+    {
+      "file": "usr/lib/libcrypto.so.3",
+      "bytes": 4533144
+    },
+    {
+      "file": "lib/modules/6.6.98-sun60iw2/kernel/drivers/media/usb/uvc/uvcvideo.ko",
+      "bytes": 3946936
+    },
+    {
+      "file": "usr/lib/libstdc++.so.6.0.34",
+      "bytes": 2820600
+    },
+    {
+      "file": "lib/modules/6.6.98-sun60iw2/kernel/bsp/drivers/g2d/g2d_sunxi.ko",
+      "bytes": 2661000
+    },
+    {
+      "file": "lib/modules/6.6.98-sun60iw2/kernel/bsp/drivers/vin/vin_io.ko",
+      "bytes": 2405368
+    },
+    {
+      "file": "lib/modules/6.6.98-sun60iw2/kernel/bsp/drivers/net/wireless/aic8800/aic8800_bsp/aic8800_bsp.ko",
+      "bytes": 2381320
+    }
+  ],
   "locked_inputs": [
     {
       "file": "downloads/airlunix-apks/e2fsprogs-1.47.4-r0.apk",
@@ -338,8 +388,8 @@
   "branding_scan": "no prior product marketing references in inspected user-facing runtime paths; legal notices retained",
   "raw_size_delta_vs_previous_base": 0,
   "runtime_cpio_delta_vs_previous_base": 2205696,
-  "runtime_gzip_delta_vs_previous_base": 584403,
-  "compressed_delta_vs_previous_base_same_settings": 565072,
+  "runtime_gzip_delta_vs_previous_base": 584282,
+  "compressed_delta_vs_previous_base_same_settings": 570716,
   "limits": [
     "No physical board boot or console resource/SD-I/O test for this image",
     "Private historical rootfs snapshot remains an input; public clean bootstrap and source closure incomplete",

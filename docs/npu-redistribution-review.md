@@ -4,6 +4,10 @@ NPU support remains an intended Airlunix capability. No runtime, driver or model
 has been removed from the observation device or private build. Public binary
 publication remains pending component-specific verification.
 
+Follow-up: [exact upstream comparison](npu-upstream-comparison.md) records
+matching headers/sample files, nonmatching runtime builds, and the
+[unsent supplier permission request](npu-permission-request.md).
+
 ## Sources and permission provenance
 
 The runtime bundle is not a versioned APK/DEB package. Its exact identity is
