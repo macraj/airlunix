@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 """Finite kernel-relative readiness probe. All output is RAM-only."""
+from airlunix.logging_ram import emit, install_output
+install_output("service")
 import json
 from pathlib import Path
 import socket
@@ -65,3 +67,5 @@ while clock() - data['probe_started_boot_s'] < cfg['max_duration_s']:
     time.sleep(cfg['poll_interval_s'])
 data['probe_finished_boot_s'] = clock()
 dest.write_text(json.dumps(data, sort_keys=True) + '\n')
+
+emit("service","readiness_probe_finished")

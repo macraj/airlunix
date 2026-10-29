@@ -5,6 +5,8 @@ import os
 import pwd
 from pathlib import Path
 import signal
+import select
+from airlunix.logging_ram import emit
 import subprocess
 import sys
 import time
@@ -59,25 +61,31 @@ def run_client(config, directory, command=None):
                           '-f', '/etc/airlunix/time-chrony.conf']
     peak = 0
     timed_out = False
-    log = directory / 'last-client.log'
-    with log.open('wb') as output:
-        proc = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=output,
-                                stderr=subprocess.STDOUT, start_new_session=True)
-        while proc.poll() is None:
-            peak = max(peak, client_rss(proc.pid))
-            if time.monotonic() - started >= config['timeout_s']:
-                timed_out = True
-                os.killpg(proc.pid, signal.SIGTERM)
-                try:
-                    proc.wait(timeout=3)
-                except subprocess.TimeoutExpired:
-                    os.killpg(proc.pid, signal.SIGKILL)
-                break
-            time.sleep(0.05)
-        code = proc.wait()
-    # Bound stored diagnostic output; no file leaves /run.
-    if log.stat().st_size > 16384:
-        log.write_bytes(log.read_bytes()[-16384:])
+    # Drain in the existing finite dispatcher, never to an unbounded file.
+    proc = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, start_new_session=True)
+    os.set_blocking(proc.stdout.fileno(), False)
+    tail = bytearray()
+    emit('ntp','attempt_started')
+    while True:
+        ready,_,_=select.select([proc.stdout],[],[],0.05)
+        if ready:
+            try:chunk=os.read(proc.stdout.fileno(),4096)
+            except BlockingIOError:chunk=None
+            if chunk:
+                tail.extend(chunk);del tail[:-16384]
+            elif chunk==b'' and proc.poll() is not None:break
+        time.sleep(0.05)
+        peak=max(peak,client_rss(proc.pid))
+        if time.monotonic()-started>=config['timeout_s'] and proc.poll() is None:
+            timed_out=True
+            os.killpg(proc.pid,signal.SIGKILL)
+        if proc.poll() is not None and not ready:break
+    code=proc.wait();proc.stdout.close()
+    # Raw client content is not persisted/exported; structured result and
+    # bounded tail length identify truncation without retaining server data.
+    if tail:emit('ntp','client_tail',message=tail[-768:].decode(errors='replace'))
+    emit('ntp','attempt_finished',code==0 and not timed_out,reason=str(code),operation=str(len(tail)))
     return {'success': code == 0 and not timed_out, 'return_code': code,
             'timed_out': timed_out, 'duration_s': round(time.monotonic() - started, 3),
             'sampled_client_peak_rss_kib': peak, 'rss_sampling_interval_s': 0.05}

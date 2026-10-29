@@ -1,8 +1,11 @@
 #!/sbin/openrc-run
 description="Prepare device SSH identity in RAM"
-depend() { before sshd; after nftables; }
+depend() { before sshd; after nftables airlunix-admin; }
 start() {
     # New unprovisioned keys are volatile until an explicit provisioning save.
     ssh-keygen -A
     mkdir -p /run/sshd
+    if [ -f /etc/airlunix/selected/web/config.json ] && [ ! -f /etc/airlunix/selected/web/first-login-completed ]; then
+        /usr/bin/python3 -m airlunix.setup --issue-first-login >/dev/null 2>&1 || ewarn "First-login pairing unavailable; inspect via SSH"
+    fi
 }

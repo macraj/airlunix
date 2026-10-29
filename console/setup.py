@@ -7,13 +7,43 @@ import os
 from pathlib import Path
 import ssl
 import subprocess
+import secrets
+import time
+from .admin import Accounts
+
+def private_file(path,data,uid=0,gid=0):
+    temporary=path.with_name(path.name+'.'+secrets.token_hex(8))
+    fd=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+    with os.fdopen(fd,'wb') as f:
+        os.fchown(f.fileno(),uid,gid);f.write(data)
+    os.replace(temporary,path)
+
+def issue_first_login(folder,administrator=None):
+    if not (folder/'first-login-completed').exists():
+        users=[u for u in Accounts().interactive() if u['administrator'] and (not administrator or u['name']==administrator)]
+        if len(users)!=1:raise SystemExit('Use --admin to choose one provisioned administrator')
+        user=users[0];token=secrets.token_urlsafe(32)
+        runtime=Path('/run/airlunix');runtime.mkdir(parents=True,exist_ok=True)
+        record={'user':user['name'],'token_sha256':hashlib.sha256(token.encode()).hexdigest(),'expires_boot_s':time.monotonic()+300}
+        target=runtime/'first-login.json';private_file(target,json.dumps(record).encode())
+        import pwd
+        account=pwd.getpwnam(user['name']);target=Path(account.pw_dir)/'.airlunix-web-first-login'
+        private_file(target,(token+'\n').encode(),account.pw_uid,account.pw_gid)
+        print('Passwordless first-browser login prepared for '+user['name']+'; retrieve its one-use link through authenticated SSH. Expires in 5 minutes. No token is printed or persisted.')
+
 
 def main():
     if os.geteuid()!=0:raise SystemExit('Run through authenticated doas')
     p=argparse.ArgumentParser(description='Provision Airlunix Web Console HTTPS locally; does not save automatically')
     p.add_argument('--bind',default='127.0.0.1',choices=['127.0.0.1'])
+    p.add_argument('--admin',help='Provisioned administrator for passwordless first browser login')
+    p.add_argument('--issue-first-login',action='store_true',help='Issue only a volatile first-login link for already provisioned HTTPS')
     args=p.parse_args()
     if not Path('/etc/airlunix-provisioned').exists():raise SystemExit('Provision an administrator first')
+    if args.issue_first_login:
+        folder=Path('/etc/airlunix/selected/web')
+        if not (folder/'config.json').exists():raise SystemExit('HTTPS has not been provisioned')
+        issue_first_login(folder,args.admin);return
     # Preview deliberately supports only an SSH tunnel. No firewall opening or
     # all-network listener is inferred from enabling the web service.
     group=grp.getgrnam('airweb').gr_gid
@@ -37,5 +67,6 @@ def main():
     print('Start: doas rc-service airlunix-admin start; doas rc-service airlunix-web start')
     print('Tunnel: ssh -L 8443:127.0.0.1:8443 YOUR_ADMIN@DEVICE_ADDRESS')
     print('Then open https://127.0.0.1:8443 . Persist explicitly with: doas airlunix-state save')
+    issue_first_login(folder,args.admin)
 
 if __name__=='__main__':main()

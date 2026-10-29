@@ -4,6 +4,12 @@ command="/usr/bin/python3"
 command_args="-m airlunix.admin"
 command_background=true
 pidfile="/run/airlunix-admin.pid"
-output_log="/run/airlunix-admin.log"
-error_log="/run/airlunix-admin.err"
-depend() { after localmount; }
+output_log="/dev/null"
+error_log="/dev/null"
+depend() { after localmount; before networking sshd crond airlunix-identity; }
+start_pre() {
+    mkdir -p /run/airlunix-log
+    mountpoint -q /run/airlunix-log || mount -t tmpfs -o size=8m,nr_inodes=1024,mode=0711,nosuid,nodev,noexec tmpfs /run/airlunix-log
+}
+start_post() { /usr/bin/python3 -m airlunix.logging_ram service helper_started ok; }
+stop_pre() { /usr/bin/python3 -m airlunix.logging_ram service helper_stopping ok; }

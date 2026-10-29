@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 """Explicit selected persistence. SD is mounted only while this command runs."""
+from airlunix.logging_ram import emit
 import io
 import os
 from pathlib import Path, PurePosixPath
@@ -110,8 +111,20 @@ if __name__ == '__main__':
     if os.geteuid() != 0:
         sys.exit('Root authentication is required')
     if sys.argv[1:] == ['save']:
-        save()
+        emit("administration","state_save_started")
+        try:
+            save()
+            emit("administration","state_save_completed")
+        except Exception as exc:
+            emit("administration","state_save_failed",False,reason=type(exc).__name__)
+            raise
     elif len(sys.argv) == 3 and sys.argv[1] == 'restore':
-        restore(Path(sys.argv[2]))
+        emit("administration","state_restore_started")
+        try:
+            restore(Path(sys.argv[2]))
+            emit("administration","state_restore_completed")
+        except Exception as exc:
+            emit("administration","state_restore_failed",False,reason=type(exc).__name__)
+            raise
     else:
         sys.exit('Usage: airlunix-state save')

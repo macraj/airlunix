@@ -9,6 +9,9 @@ import tempfile
 import http.client
 import ssl
 import threading
+import hashlib
+import secrets
+import time
 import unittest
 from unittest.mock import patch
 
@@ -34,7 +37,7 @@ class ConsoleTests(unittest.TestCase):
         self.accounts=FakeAccounts();self.saved=False
         class IsolatedAdmin(Admin):
             def fingerprint(inner):return json.dumps(inner.accounts.passwords,sort_keys=True)
-        self.admin=IsolatedAdmin(self.accounts,state=Path(self.temp.name),persist=lambda:{'success':True,'sd_unmounted':True})
+        self.admin=IsolatedAdmin(self.accounts,state=Path(self.temp.name),persist=lambda:{'success':True,'sd_unmounted':True},first_marker=Path(self.temp.name)/'selected/first-login-completed')
     def call(self,op,user='operator',**kwargs):return self.admin.call({'op':op,'user':user,'password':'initial',**kwargs})
     def test_password_reauthentication_and_normal_user_boundary(self):
         with self.assertRaises(Denied):self.call('password',password='wrong',new_password='changed')
@@ -49,7 +52,7 @@ class ConsoleTests(unittest.TestCase):
         with self.assertRaisesRegex(Denied,'throttled'):self.call('login')
         self.assertFalse(self.admin.audit[-1]['success'])
         for _ in range(300):self.admin.log('operator','test',True)
-        self.assertEqual(len(self.admin.audit),200)
+        self.assertEqual(len(self.admin.audit),32)
         self.assertNotIn('initial',json.dumps(list(self.admin.audit)))
     def test_save_failure_and_unmount_failure_do_not_mark_saved(self):
         for result in ({'success':False,'sd_unmounted':True},{'success':True,'sd_unmounted':False}):
@@ -101,6 +104,31 @@ class ConsoleTests(unittest.TestCase):
         with self.assertRaises(StorageError):self.call('storage_apply',token=preview['token'],confirmation='fixture')
         preview=self.call('storage_preview',action='expand')
         self.assertTrue(self.call('storage_apply',token=preview['token'],confirmation='fixture')['durable_immediately'])
+    def bootstrap(self,expires=300,user='operator'):
+        token=secrets.token_urlsafe(32)
+        (Path(self.temp.name)/'first-login.json').write_text(json.dumps({'user':user,'token_sha256':hashlib.sha256(token.encode()).hexdigest(),'expires_boot_s':time.monotonic()+expires}))
+        return token
+    def test_first_login_uses_one_time_ssh_pairing_without_password(self):
+        token=self.bootstrap()
+        with patch.object(self.accounts,'verify',side_effect=AssertionError('A password must not be requested')):
+            result=self.admin.call({'op':'bootstrap_login','token':token})
+        self.assertTrue(result['first_login']);self.assertEqual(result['name'],'operator')
+        with self.assertRaises(Denied):self.admin.call({'op':'bootstrap_login','token':token})
+        self.assertNotIn(token,json.dumps(list(self.admin.audit)))
+    def test_first_login_rejects_wrong_expired_and_non_admin_tokens(self):
+        for expires,user,wrong in ((300,'operator',True),(-1,'operator',False),(300,'reader',False)):
+            token=self.bootstrap(expires,user)
+            with self.assertRaises(Denied):self.admin.call({'op':'bootstrap_login','token':'x'*43 if wrong else token})
+    def test_choose_first_password_requires_grant_and_then_disables_bootstrap(self):
+        result=self.admin.call({'op':'bootstrap_login','token':self.bootstrap()})
+        grant=result['setup_grant']
+        with self.assertRaises(Denied):self.admin.call({'op':'first_password','user':'reader','setup_grant':grant,'new_password':'chosen'})
+        with self.assertRaises(Denied):self.admin.call({'op':'first_password','user':'operator','setup_grant':'wrong','new_password':'chosen'})
+        changed=self.admin.call({'op':'first_password','user':'operator','setup_grant':grant,'new_password':'chosen'})
+        self.assertFalse(changed['saved']);self.assertEqual(self.accounts.passwords['operator'],'chosen')
+        self.assertTrue(self.admin.first_marker.exists())
+        with self.assertRaises(Denied):self.admin.call({'op':'first_password','user':'operator','setup_grant':grant,'new_password':'another'})
+        with self.assertRaises(Denied):self.admin.call({'op':'bootstrap_login','token':self.bootstrap()})
 
 def make_image(path,size=192*1024*1024,part=64*1024*1024):
     mbr=bytearray(512);mbr[:20]=b'Airlunix test guard!!';mbr[510:]=b'\x55\xaa'
@@ -184,5 +212,21 @@ class HTTPSecurityTests(unittest.TestCase):
         self.assertEqual(self.request('/api/save',{'password':'fresh'},cookie,data['csrf'])[0],403)
         session['created']-=4000
         self.assertEqual(self.request('/api/overview',cookie=cookie)[0],401)
+    def test_passwordless_first_login_and_setup_capability_never_reaches_client(self):
+        self.helper.bootstrap_used=False
+        status,data,cookie=self.request('/api/login',{'bootstrap_token':self.helper.bootstrap_token})
+        self.assertEqual(status,200);self.assertTrue(data['first_login'])
+        self.assertNotIn('setup_grant',json.dumps(data))
+        self.assertEqual(self.request('/api/save',{'password':'anything'},cookie,data['csrf'])[0],403)
+        status,job,_=self.request('/api/first-password',{'new_password':'chosen-test-password'},cookie,data['csrf'])
+        self.assertEqual(status,202)
+        for _ in range(50):
+            status,result,_=self.request('/api/jobs/'+job['job'],cookie=cookie)
+            if result['state'] in ('success','error'):break
+            time.sleep(.01)
+        self.assertEqual(result['state'],'success')
+        self.assertFalse(self.request('/api/session',cookie=cookie)[1]['first_login'])
+        self.assertEqual(self.request('/api/first-password',{'new_password':'another'},cookie,data['csrf'])[0],403)
+        self.assertEqual(self.request('/api/login',{'bootstrap_token':self.helper.bootstrap_token})[0],403)
 
 if __name__=='__main__':unittest.main()

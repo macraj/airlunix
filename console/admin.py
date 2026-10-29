@@ -17,6 +17,8 @@ import subprocess
 import threading
 import time
 from .storage import Media, StorageError, storage_lock
+from .process import run as bounded_run
+from .logging_ram import emit, install_output, Collector
 
 class Denied(PermissionError): pass
 
@@ -68,16 +70,17 @@ CRYPT_LOCK=threading.Lock()
 def valid_name(name): return isinstance(name,str) and re.fullmatch(r'[a-z][a-z0-9_-]{0,30}',name) is not None
 
 class Admin:
-    def __init__(self,accounts=None,media=None,state=Path('/run/airlunix'),persist=None):
+    def __init__(self,accounts=None,media=None,state=Path('/run/airlunix'),persist=None,first_marker=Path('/etc/airlunix/selected/web/first-login-completed')):
         self.accounts=accounts or Accounts();self.media=media;self.state=state
         state.mkdir(parents=True,exist_ok=True)
         keypath=state/'fingerprint.key'
         if not keypath.exists():
             fd=os.open(keypath,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
             with os.fdopen(fd,'wb') as f:f.write(secrets.token_bytes(32))
-        self.key=keypath.read_bytes();self.plans={};self.audit=collections.deque(maxlen=200)
+        self.key=keypath.read_bytes();self.plans={};self.audit=collections.deque(maxlen=32);self.log_grants={};self.log_collector=None;self.log_reads={};self.export_lock=threading.Lock()
         self.limits=collections.OrderedDict();self.lock=threading.RLock()
         self.persist=persist or self.save_system
+        self.first_marker=first_marker;self.bootstrap_grants={}
         baseline=state/'saved-fingerprint'
         self.baseline=baseline.read_text() if baseline.exists() else self.fingerprint()
         if not baseline.exists():baseline.write_text(self.baseline);baseline.chmod(0o600)
@@ -96,6 +99,7 @@ class Admin:
 
     def log(self,user,action,success):
         self.audit.append({'boot_s':round(time.monotonic(),3),'user':user,'action':action,'success':success})
+        emit('security' if action in ('login','authentication') else 'administration',action,success,actor=user)
 
     def authenticate(self,name,password):
         now=time.monotonic()
@@ -113,7 +117,7 @@ class Admin:
 
     def save_system(self):
         # The persistence command owns the shared storage lock itself.
-        result=subprocess.run(['/usr/sbin/airlunix-state','save'],capture_output=True,text=True,timeout=120)
+        result=bounded_run(['/usr/sbin/airlunix-state','save'],capture_output=True,text=True,timeout=120)
         mounted=self.mounted()
         if result.returncode or mounted:
             raise StorageError('Save failed or SD remains mounted. Use authenticated SSH to inspect /state and unmount safely; do not remove media.')
@@ -126,10 +130,104 @@ class Admin:
 
     def call(self,request):
         op=request.get('op')
+        operation=op if isinstance(op,str) and len(op)<40 else 'invalid'
+        sensitive=operation in ('save','password','create_user','storage_preview','storage_apply','first_password','bootstrap_login')
+        correlation=secrets.token_hex(8)
+        if sensitive:emit('administration',operation+'_start',actor=request.get('user',''),operation=correlation)
+        try:
+            result=self._call(request)
+            if sensitive:emit('administration',operation+'_complete',result.get('success',True),actor=request.get('user',''),operation=correlation)
+            return result
+        except Exception as exc:
+            emit('administration' if sensitive else 'security',operation+'_failed',False,
+                 actor=request.get('user',''),reason=type(exc).__name__,operation=correlation)
+            raise
+
+    def _call(self,request):
+        op=request.get('op')
+        if op=='log_authorize':
+            user=self.authenticate(request.get('user'),request.get('password'))
+            if not user['administrator']:raise Denied('Administrator required')
+            now=time.monotonic()
+            self.log_grants={k:v for k,v in self.log_grants.items() if v['expires']>now}
+            if len(self.log_grants)>=16:raise Denied('Log grant limit')
+            token=secrets.token_urlsafe(32)
+            self.log_grants[hashlib.sha256(token.encode()).hexdigest()]={'user':user['name'],'expires':now+300,'last_read':0}
+            emit('security','log_authorized',actor=user['name'])
+            return {'grant':token,'expires_in_s':300}
+        if op in ('logs','log_export'):
+            token=request.get('grant','')
+            if not isinstance(token,str) or len(token)>128:raise Denied('Log authorization required')
+            grant=self.log_grants.get(hashlib.sha256(token.encode()).hexdigest())
+            if not grant or grant['expires']<=time.monotonic():raise Denied('Fresh administrator log authorization required')
+            if not self.log_collector:raise ValueError('Log collector unavailable')
+            if op=='logs':
+                if time.monotonic()-grant['last_read']<1:raise Denied('Log read rate limit')
+                grant['last_read']=time.monotonic()
+                return self.log_collector.store.query(request.get('channel','security'),request.get('cursor'),
+                    request.get('limit',100),request.get('event',''),request.get('severity',''))
+            exporter=self.authenticate(request.get('user'),request.get('password'))
+            if not exporter['administrator'] or exporter['name']!=grant['user']:raise Denied('Fresh administrator authentication required')
+            if self.log_collector.store.low_memory:raise Denied('Export unavailable under memory pressure')
+            if not self.export_lock.acquire(False):raise Denied('Export already running')
+            try:
+                # One bounded page per channel, redacted structured records only.
+                # No raw messages, identifiers, paths, command args or state files.
+                import base64,gzip
+                payload={'schema':1,'release':Path('/etc/airlunix-release').read_text()[:256],
+                         'health':self.log_collector.store.status(),'records':[],
+                         'omissions':['Older pages','Raw diagnostic messages','Private device and network state']}
+                for channel in self.log_collector.store.quotas:
+                    rows=self.log_collector.store.query(channel,limit=32)['records']
+                    for row in rows:
+                        payload['records'].append({k:v for k,v in row.items() if k in
+                            ('schema','sequence','monotonic_s','boot_s','wall_utc_s','time_confidence','channel','producer','event','success','severity','reason')})
+                raw=json.dumps(payload,separators=(',',':')).encode()
+                if len(raw)>400000:raise ValueError('Export size limit')
+                data=gzip.compress(raw,mtime=0)
+                if len(data)>45000:raise ValueError('Export transfer limit')
+                emit('administration','diagnostic_export',actor=grant['user'])
+                return {'encoding':'gzip-base64','data':base64.b64encode(data).decode(),'uncompressed_bytes':len(raw)}
+            finally:self.export_lock.release()
+        if op=='bootstrap_login':
+            token=request.get('token')
+            if not isinstance(token,str) or not 32<=len(token)<=128:raise Denied('First-login link is invalid')
+            with self.lock:
+                path=self.state/'first-login.json'
+                if self.first_marker.exists() or not path.exists():raise Denied('First-login link is unavailable or already used')
+                record=json.loads(path.read_text())
+                if time.monotonic()>record['expires_boot_s'] or not hmac.compare_digest(hashlib.sha256(token.encode()).hexdigest(),record['token_sha256']):
+                    raise Denied('First-login link is invalid or expired')
+                user=next((u for u in self.accounts.interactive() if u['name']==record['user'] and u['administrator']),None)
+                if not user:raise Denied('Provisioned administrator required')
+                grant=secrets.token_urlsafe(32)
+                self.bootstrap_grants={hashlib.sha256(grant.encode()).hexdigest():{'user':user['name'],'expires':time.monotonic()+600}}
+                path.unlink()
+                try:(Path(pwd.getpwnam(user['name']).pw_dir)/'.airlunix-web-first-login').unlink(missing_ok=True)
+                except KeyError:pass
+                self.log(user['name'],op,True)
+                return {**user,'first_login':True,'setup_grant':grant}
+        if op=='first_password':
+            grant=request.get('setup_grant')
+            if not isinstance(grant,str):raise Denied('Fresh first-login authorization required')
+            key=hashlib.sha256(grant.encode()).hexdigest()
+            with self.lock:
+                record=self.bootstrap_grants.get(key)
+                if not record or record['user']!=request.get('user') or time.monotonic()>record['expires'] or self.first_marker.exists():
+                    raise Denied('First-login authorization expired or was already used')
+                if not any(u['name']==record['user'] and u['administrator'] for u in self.accounts.interactive()):
+                    raise Denied('Provisioned administrator required')
+                with storage_lock(self.state/'storage.lock'):
+                    self.accounts.change(record['user'],request.get('new_password'))
+                    self.first_marker.parent.mkdir(parents=True,exist_ok=True)
+                    self.first_marker.write_text('Password chosen after SSH-authenticated browser pairing\n');self.first_marker.chmod(0o600)
+                self.bootstrap_grants.pop(key)
+                self.log(record['user'],op,True)
+                return {'success':True,'applied_in':'RAM','saved':False,'password_setup_complete':True}
         if op=='login':
             user=self.authenticate(request.get('user'),request.get('password'))
             self.log(user['name'],'login',True);return user
-        if op not in ('users','save_status','audit','password','create_user','save','storage','storage_preview','storage_apply'):
+        if op not in ('users','save_status','password','create_user','save','storage','storage_preview','storage_apply'):
             raise ValueError('Unsupported operation')
         # All mutations require fresh system-password authentication. No bearer
         # token obtained by compromising the unprivileged daemon grants root.
@@ -217,9 +315,12 @@ class Server(socketserver.ThreadingMixIn,socketserver.UnixStreamServer):
 
 if __name__=='__main__':
     if os.geteuid()!=0:raise SystemExit('Privileged helper requires root')
+    install_output('helper')
+    collector=Collector().start()
     user=pwd.getpwnam('airweb');directory=Path('/run/airlunix-admin')
     directory.mkdir(mode=0o750,exist_ok=True);os.chown(directory,0,user.pw_gid)
     path=directory/'control.sock'
     if path.exists():path.unlink()
-    with Server(str(path),Admin(),user.pw_uid) as server:
+    admin=Admin();admin.log_collector=collector
+    with Server(str(path),admin,user.pw_uid) as server:
         os.chown(path,0,user.pw_gid);path.chmod(0o660);server.serve_forever()

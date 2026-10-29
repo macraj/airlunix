@@ -77,6 +77,7 @@ class Sampler:
             self.history.append({'t':now,'cpu':util,'available':memory.get('MemAvailable'),
                                  'rx':sum(x['rx_rate'] or 0 for x in networks) if self.previous else None,
                                  'tx':sum(x['tx_rate'] or 0 for x in networks) if self.previous else None})
+            while len(json.dumps(list(self.history)).encode())>131072:self.history.popleft()
             self.cached={'sampled_monotonic':now,'release':self.release or text('/etc/airlunix-release') or 'Airlunix · build unavailable',
                          'hardware':board.rstrip('\0') if board else 'Host validation · '+platform.machine(),
                          'uptime_s':boot_seconds,'cpu_percent':util,'load':list(os.getloadavg()),

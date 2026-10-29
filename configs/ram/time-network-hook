@@ -1,5 +1,6 @@
 #!/bin/sh
 # DHCP post-bound/post-renew hook. Never wait for Internet/NTP in DHCP.
+/usr/bin/python3 -m airlunix.logging_ram network dhcp_event ok
 mkdir -p /run/airlunix-time
-/usr/sbin/airlunix-time network </dev/null >/run/airlunix-time/network.log 2>&1 &
+/usr/sbin/airlunix-time network </dev/null >/dev/null 2>&1 &
 exit 0

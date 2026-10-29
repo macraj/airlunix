@@ -5,17 +5,18 @@ command_args="-m airlunix.web"
 command_user="airweb:airweb"
 command_background=true
 pidfile="/run/airlunix-web.pid"
-output_log="/run/airlunix-web.log"
-error_log="/run/airlunix-web.err"
+output_log="/dev/null"
+error_log="/dev/null"
 depend() { need airlunix-admin; after nftables; }
 start_pre() {
     [ -f /etc/airlunix/selected/web/config.json ] || {
         eerror "Not provisioned. Use authenticated SSH: doas airlunix-web-setup"
         return 1
     }
-    /usr/bin/python3 -c 'import os,pwd; from pathlib import Path; u=pwd.getpwnam("airweb"); paths=[Path("/run/airlunix-web.log"),Path("/run/airlunix-web.err")]; [(p.touch(exist_ok=True),os.chown(p,u.pw_uid,u.pw_gid),p.chmod(0o600)) for p in paths]' || return 1
 }
 start() {
     [ -f /etc/airlunix/selected/web/config.json ] || return 0
     default_start
 }
+start_post() { /usr/bin/python3 -m airlunix.logging_ram service web_started ok; }
+stop_pre() { /usr/bin/python3 -m airlunix.logging_ram service web_stopping ok; }

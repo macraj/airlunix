@@ -3,6 +3,6 @@ description="Schedule a bounded initial NTP client attempt without blocking boot
 depend() { after networking; }
 start() {
     mkdir -p /run/airlunix-time
-    /usr/sbin/airlunix-time attempt </dev/null >/run/airlunix-time/boot.log 2>&1 &
+    /usr/sbin/airlunix-time attempt </dev/null >/dev/null 2>&1 &
     return 0
 }

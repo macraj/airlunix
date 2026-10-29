@@ -2,6 +2,8 @@
 import contextlib
 import fcntl
 import hashlib
+from .logging_ram import emit
+from .process import run as bounded_run
 import json
 import os
 from pathlib import Path
@@ -134,6 +136,7 @@ class Media:
             raise StorageError('Persistence filesystem identity does not match Airlunix')
 
     def execute(self, preview):
+        emit("administration","partition_validation_started")
         self.check_idle()
         layout=self.inspect()
         if layout['mbr_sha256']!=preview['layout_sha256'] or layout['capacity_sectors']!=preview['capacity_sectors']:
@@ -150,7 +153,7 @@ class Media:
                                            preview['start'],preview['sectors'])
             else: struct.pack_into('<I',data,off+12,preview['sectors'])
             if not preview.get('filesystem_only'):
-                f.seek(0);f.write(data);os.fsync(f.fileno())
+                f.seek(0);f.write(data);os.fsync(f.fileno());emit('administration','partition_table_written')
         if self.test_image:
             return self.test_filesystem(preview)
         target=Path(str(self.disk)+'p'+str(preview['number']))
@@ -165,13 +168,15 @@ class Media:
         if not target.exists():
             return {'success':False,'partition_table_changed':True,'reboot_required':True,'error':'New partition node unavailable; no format attempted'}
         if preview['action']=='expand':
-            check=subprocess.run(['/sbin/e2fsck','-p',str(target)],capture_output=True,timeout=120)
+            check=bounded_run(['/sbin/e2fsck','-p',str(target)],capture_output=True,timeout=120)
             if check.returncode not in (0,1):
                 return {'success':False,'partition_table_changed':True,'reboot_required':check.returncode==2,'error':'Filesystem check did not permit resize; existing filesystem remains at its previous size'}
             command=['/usr/sbin/resize2fs',str(target)]
         else:
             command=['/sbin/mke2fs','-t','ext4','-L','airlunix-data',str(target)]
-        result=subprocess.run(command,capture_output=True,timeout=120)
+        emit('administration','filesystem_operation_started')
+        result=bounded_run(command,capture_output=True,timeout=120)
+        emit('administration','filesystem_operation_finished',result.returncode==0)
         return {'success':result.returncode==0,'partition_table_changed':True,
                 'reboot_required':False,'filesystem_updated':result.returncode==0,
                 'error':None if result.returncode==0 else 'Filesystem operation failed; inspect via authenticated SSH before retrying',
@@ -195,11 +200,11 @@ class Media:
                             out.write(data);remaining-=len(data)
                 out.truncate(length)
             if preview['action']=='expand':
-                checked=subprocess.run([shutil.which('e2fsck'),'-p',str(target)],capture_output=True,timeout=120)
+                checked=bounded_run([shutil.which('e2fsck'),'-p',str(target)],capture_output=True,timeout=120)
                 if checked.returncode not in (0,1):raise StorageError('Disposable filesystem check failed')
                 command=[shutil.which('resize2fs'),str(target)]
             else:command=[shutil.which('mke2fs'),'-q','-t','ext4','-L','airlunix-data',str(target)]
-            subprocess.run(command,check=True,capture_output=True,timeout=120)
+            bounded_run(command,check=True,capture_output=True,timeout=120)
             with self.disk.open('r+b') as disk,target.open('rb') as source:
                 disk.seek(preview['start']*512)
                 shutil.copyfileobj(source,disk);disk.flush();os.fsync(disk.fileno())

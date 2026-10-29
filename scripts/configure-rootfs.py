@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import shutil
 import sys
+import subprocess
 
 repo = Path(__file__).resolve().parents[1]
 root = Path(sys.argv[1]).resolve()
@@ -59,12 +60,15 @@ for source in sorted([repo / 'configs/distribution.json',
                       repo / 'scripts/build-image.sh',
                       *(repo / 'console').glob('*.py'),
                       *(repo / 'web').glob('*'),
-                      *(repo / 'configs/ram').glob('*')]):
+                      *(repo / 'configs/ram').glob('*'),
+                      repo/'patches/musl-nonblocking-syslog.patch',
+                      repo/'scripts/build-nonblocking-musl.sh',
+                      repo/'build/musl-nonblocking/lib/libc.so']):
     if source.is_file():
         digest.update(str(source.relative_to(repo)).encode() + b'\0' + source.read_bytes())
 buildid = digest.hexdigest()[:16]
 write('etc/airlunix-release', f'{cfg["name"]} {cfg["version"]} — {cfg["profile"]}\nBuild configuration: {buildid}\n')
-write('etc/inittab', '::sysinit:/sbin/openrc sysinit\n::sysinit:/sbin/openrc boot\n::wait:/sbin/openrc default\ntty1::respawn:/usr/sbin/airlunix-status\ntty2::respawn:/usr/sbin/airlunix-console tty2\nttyS7::respawn:/usr/sbin/airlunix-console ttyS7\n::ctrlaltdel:/sbin/reboot\n::shutdown:/sbin/openrc shutdown\n')
+write('etc/inittab', '::sysinit:/usr/sbin/airlunix-openrc sysinit\n::sysinit:/usr/sbin/airlunix-openrc boot\n::wait:/usr/sbin/airlunix-openrc default\ntty1::respawn:/usr/sbin/airlunix-status\ntty2::respawn:/usr/sbin/airlunix-console tty2\nttyS7::respawn:/usr/sbin/airlunix-console ttyS7\n::ctrlaltdel:/sbin/reboot\n::shutdown:/usr/sbin/airlunix-openrc shutdown\n')
 for name, dest in {'init': 'init', 'sshd_config': 'etc/ssh/sshd_config',
                    'web.initd': 'etc/init.d/airlunix-web',
                    'admin.initd': 'etc/init.d/airlunix-admin',
@@ -73,6 +77,7 @@ for name, dest in {'init': 'init', 'sshd_config': 'etc/ssh/sshd_config',
                    'airlunix-status': 'usr/sbin/airlunix-status',
                    'airlunix-console': 'usr/sbin/airlunix-console',
                    'airlunix-state': 'usr/sbin/airlunix-state',
+                   'airlunix-openrc': 'usr/sbin/airlunix-openrc',
                    'airlunix-provision': 'usr/sbin/airlunix-provision',
                    'airlunix_time.py': 'usr/lib/airlunix_time.py',
                    'airlunix-time': 'usr/sbin/airlunix-time',
@@ -85,7 +90,7 @@ for name, dest in {'init': 'init', 'sshd_config': 'etc/ssh/sshd_config',
     write(dest, (repo / 'configs/ram' / name).read_text(),
           0o644 if name in ('sshd_config', 'time.json', 'time-chrony.conf', 'boot-measure.json', 'airlunix_time.py') else 0o755)
 write('etc/udhcpc/post-renew/airlunix-time', (repo / 'configs/ram/time-network-hook').read_text(), 0o755)
-write('etc/conf.d/crond', 'CRON_OPTS="-c /etc/crontabs -L /run/crond.log"\n')
+write('etc/conf.d/crond', 'CRON_OPTS="-c /etc/crontabs -S"\n')
 cron_service = root / 'etc/init.d/crond'
 cron_service.write_text(cron_service.read_text().replace('need logger', 'use logger'))
 with (root / 'etc/crontabs/root').open('a') as cron:
@@ -113,3 +118,22 @@ link.symlink_to('/etc/init.d/airlunix-identity') if not link.exists() else None
 for p in (root / 'etc/runlevels/shutdown').glob('mount-ro'):
     p.unlink()
 print(buildid)
+
+# Source-built existing musl 1.2.6: nonblocking /dev/log prevents a stalled
+# helper from blocking elevation, SSH or DHCP. Source/patch hash is in build ID.
+libc=repo/'build/musl-nonblocking/lib/libc.so'
+assert libc.is_file(), 'Run scripts/build-nonblocking-musl.sh first'
+shutil.copyfile(libc,root/'lib/ld-musl-aarch64.so.1')
+os.chown(root/'lib/ld-musl-aarch64.so.1',0,0)
+(root/'lib/ld-musl-aarch64.so.1').chmod(0o755)
+# udhcpc emits to syslog rather than inherited /dev/null.
+write('etc/udhcpc/udhcpc.conf','UDHCPC_OPTS="-S"\n')
+
+for service in ('sshd','networking','nftables','crond'):
+    target=root/'etc/init.d'/service
+    text=target.read_text()
+    text+='\nstart_post() { /usr/bin/python3 -m airlunix.logging_ram service '+service+'_started ok; }\nstop_pre() { /usr/bin/python3 -m airlunix.logging_ram service '+service+'_stopping ok; }\n' if service!='sshd' else '\nstart_post() { /usr/bin/python3 -m airlunix.logging_ram service sshd_started ok; }\n'
+    target.write_text(text)
+
+network=root/'etc/network/interfaces'
+network.write_text(network.read_text().replace('iface eth0 inet dhcp','iface eth0 inet dhcp\n    udhcpc-opts -S'))
