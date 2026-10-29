@@ -129,6 +129,7 @@ def dispatch(config, directory, event=False, clock=boot_seconds, runner=run_clie
             delay = config['retry_s'][min(state['failures'] - 1, len(config['retry_s']) - 1)]
             state['next_due_boot_s'] = now + delay
         write_state(directory, state)
+        emit('ntp','dispatch_result',result['success'],reason='success' if result['success'] else 'failed')
         return state
 
 def status(directory):

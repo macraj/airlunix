@@ -1,0 +1,16 @@
+#!/usr/bin/python3
+"""Finite, bounded capture of DHCP script output, including previously lost stderr."""
+import sys
+from airlunix.process import run
+from airlunix.logging_ram import emit
+kind=sys.argv[1] if len(sys.argv)==2 else ''
+if kind not in ('bound','renew','deconfig','nak','leasefail'):raise SystemExit(2)
+try:
+    result=run(['/bin/sh','/usr/share/udhcpc/default.script',kind],timeout=20)
+    if result.returncode or kind in ('nak','leasefail'):
+        emit('network','dhcp_'+kind,False,reason=str(result.returncode),message=result.stdout.decode(errors='replace')[-768:])
+    elif kind!='renew':emit('network','dhcp_'+kind)
+    raise SystemExit(result.returncode)
+except Exception as exc:
+    emit('network','dhcp_hook_failed',False,reason=type(exc).__name__)
+    raise SystemExit(1)

@@ -34,6 +34,7 @@ def run(args, capture_output=True, timeout=120, check=False, text=False):
                 if not ready or not chunk:break
         code=process.wait(timeout=1)
         output=tail.decode(errors='replace') if text else bytes(tail)
+        if code:emit('helper','tool_failed',False,reason=str(code),operation=os.path.basename(args[0]),message=tail.decode(errors='replace')[-768:])
         if dropped:emit('administration','tool_output_truncated',operation=str(dropped))
         if check and code:raise subprocess.CalledProcessError(code,args,output=output)
         return subprocess.CompletedProcess(args,code,stdout=output,stderr='' if text else b'')

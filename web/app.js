@@ -45,7 +45,7 @@ async function loadLogs(older=false){
  const path='/api/logs?channel='+encodeURIComponent(channel)+'&severity='+encodeURIComponent($('log-severity').value)+'&event='+encodeURIComponent($('log-event').value)+(older&&logCursor?'&cursor='+encodeURIComponent(JSON.stringify(logCursor)):'');
  const data=await api(path);logCursor=data.cursor;
  table('audit-list',['Boot seconds','Source','Event','Result','Clock'],data.records.map(r=>[r.boot_s,r.channel+' / '+r.producer,r.event+(r.service?' · '+r.service:'')+(r.reason?' · '+r.reason:'')+(r.message?' · '+r.message:''),r.success===false?'Failure':'Recorded',r.time_confidence]));
- $('log-health').textContent=JSON.stringify({volatile:true,gap:data.gap,counters:data.health.counters,sizes:data.health.sizes},null,2);
+ $('log-health').textContent=JSON.stringify({volatile:true,boot_id:data.health.boot_id,collection_alive:data.health.collection_alive,health_age_s:data.health.health_age_s,gap:data.gap,counters:data.health.counters,sizes:data.health.sizes},null,2);
 }
 $('log-authorize').onclick=()=>dialog('Unlock administrator logs','Fresh administrator authentication grants bounded read/export access for five minutes.',[password],async b=>{await api('/api/log-authorize',b);logsUnlocked=true;closeDialog();await loadLogs();},'Unlock');
 $('log-channel').onchange=()=>{logCursor=null;if(logsUnlocked)loadLogs().catch(e=>notice(e.message,true));};

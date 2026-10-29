@@ -22,7 +22,7 @@ CHANNELS = dict(system=1048576, kernel=1048576, security=1048576, service=524288
                 network=524288, ntp=524288, cron=262144, web=262144,
                 helper=262144, administration=524288, health=262144)
 MAX_RECORD = 2048
-EVENTS = {'web','helper','service','network','ntp','administration','security'}
+EVENTS = {'web','helper','service','network','ntp','cron','administration','security'}
 SAFE = re.compile(r'[^a-zA-Z0-9_.:-]')
 _local_drops = 0
 
@@ -38,7 +38,7 @@ def emit(channel, event, success=True, actor='', reason='', operation='', messag
     data = {'channel':channel, 'event':clean(event), 'success':bool(success),
             'actor':safe_actor(actor), 'reason':clean(reason), 'operation':clean(operation,32),
             'sender_drops':_local_drops}
-    if channel in ('service','ntp') and message:data['message']=sanitize(message)
+    if channel in ('service','ntp','helper','network') and message:data['message']=sanitize(message)
     try:
         with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM | socket.SOCK_NONBLOCK) as s:
             s.sendto(json.dumps(data,separators=(',',':')).encode(), str(root/'events.sock'))
@@ -92,6 +92,9 @@ class Store:
         self.last_wall=time.time();self.last_mono=clock();self.last_health=clock();self.last_health_check=clock()
         self.low_memory=False
         self.global_record=Bucket(100,100,clock());self.global_bytes=Bucket(131072,131072,clock())
+        self.worker_alive=lambda:None
+        try:self.release=Path('/etc/airlunix-release').read_text()[:256]
+        except OSError:self.release='isolated fixture'
         self.last_status={};self.read_slots=threading.BoundedSemaphore(2)
         for c in self.quotas:
             # Recovery reads a fixed tail, never a full file. Rename generations
@@ -215,7 +218,8 @@ class Store:
             for p in (self.root/(c+'.jsonl'),self.root/(c+'.jsonl.1')):
                 try:sizes[c]+=p.stat().st_size
                 except FileNotFoundError:pass
-        return {'instance':self.instance,'sequence':self.sequence,'counters':dict(self.counts),
+        return {'instance':self.instance,'boot_id':self.boot,'release':self.release,'sequence':self.sequence,
+                'collection_alive':self.worker_alive(),'health_age_s':round(self.clock()-self.last_health_check,3),'counters':dict(self.counts),
                 'sizes':sizes,'limits':self.quotas,'low_memory':self.low_memory,'volatile':True}
 
     def health(self):
@@ -236,7 +240,7 @@ class Store:
 class Collector:
     def __init__(self,root=ROOT,syslog_path='/dev/log',kernel=True,web_uid=2000):
         self.store=Store(root);self.root=Path(root);self.selector=selectors.DefaultSelector()
-        self.web_uid=web_uid;self.stop_event=threading.Event();self.sockets=[];self.kernel_fd=None
+        self.web_uid=web_uid;self.stop_event=threading.Event();self.sockets=[];self.kernel_fd=None;self.kernel_replay=True
         # Directory traversal permitted, contents private. Only socket is public.
         self.root.chmod(0o711)
         for name,kind in [(str(self.root/'events.sock'),'events'),(str(syslog_path),'syslog')]:
@@ -258,6 +262,7 @@ class Collector:
             early.unlink()
         except OSError:pass
         self.thread=threading.Thread(target=self.run,name='ramlog',daemon=True)
+        self.store.worker_alive=self.thread.is_alive
 
     def start(self):self.thread.start();return self
     def close(self):
@@ -275,7 +280,7 @@ class Collector:
                 c=r.get('channel')
                 if c not in EVENTS or uid!=0 and c not in ('web','security'):raise ValueError()
                 record={k:clean(r.get(k,''),80) for k in ('event','actor','reason','operation')}
-                if c in ('service','ntp') and uid==0 and isinstance(r.get('message'),str):record['message']=sanitize(r['message'])
+                if c in ('service','ntp','helper','network') and uid==0 and isinstance(r.get('message'),str):record['message']=sanitize(r['message'])
                 record['actor']=safe_actor(r.get('actor'))
                 record['success']=r.get('success') is True
                 record['severity']='info' if record['success'] else 'warning'
@@ -317,14 +322,16 @@ class Collector:
                                 # Kernel sequence/time survive independently of wall time.
                                 head,_,msg=raw.partition(b';')
                                 if head.split(b',')[0].isdigit() and int(head.split(b',')[0])%8==7:continue
-                                self.store.append('kernel',{'event':'kernel_message','kernel_header':head.decode(errors='replace')[:96],'message':sanitize(msg.decode(errors='replace'))},'kernel')
+                                self.store.append('kernel',{'event':'kernel_message','replayed':self.kernel_replay,'kernel_header':head.decode(errors='replace')[:96],'message':sanitize(msg.decode(errors='replace'))},'kernel')
                             else:
                                 raw,anc,flags,_=key.fileobj.recvmsg(2048,socket.CMSG_SPACE(12))
                                 if flags&socket.MSG_TRUNC:self.store.count('input_truncated')
                                 cred=next((data for level,typ,data in anc if level==socket.SOL_SOCKET and typ==socket.SCM_CREDENTIALS),None)
                                 if cred is None:self.store.count('no_credentials');continue
                                 pid,uid,gid=struct.unpack('3i',cred[:12]);self.ingest(raw,pid,uid,key.data)
-                        except BlockingIOError:break
+                        except BlockingIOError:
+                            if key.data=='kernel':self.kernel_replay=False
+                            break
                         except OSError:self.store.count('read_error');break
                         except Exception:self.store.count('parser_error')
                 self.store.health()

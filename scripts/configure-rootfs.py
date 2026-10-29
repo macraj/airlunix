@@ -78,6 +78,7 @@ for name, dest in {'init': 'init', 'sshd_config': 'etc/ssh/sshd_config',
                    'airlunix-console': 'usr/sbin/airlunix-console',
                    'airlunix-state': 'usr/sbin/airlunix-state',
                    'airlunix-openrc': 'usr/sbin/airlunix-openrc',
+                   'airlunix-dhcp-hook': 'usr/sbin/airlunix-dhcp-hook',
                    'airlunix-provision': 'usr/sbin/airlunix-provision',
                    'airlunix_time.py': 'usr/lib/airlunix_time.py',
                    'airlunix-time': 'usr/sbin/airlunix-time',
@@ -94,7 +95,7 @@ write('etc/conf.d/crond', 'CRON_OPTS="-c /etc/crontabs -S"\n')
 cron_service = root / 'etc/init.d/crond'
 cron_service.write_text(cron_service.read_text().replace('need logger', 'use logger'))
 with (root / 'etc/crontabs/root').open('a') as cron:
-    cron.write('\n* * * * * /usr/sbin/airlunix-time attempt >/dev/null 2>&1\n')
+    cron.write('\n* * * * * /usr/sbin/airlunix-time attempt >/dev/null 2>&1 || /usr/bin/python3 -m airlunix.logging_ram cron ntp_dispatch_failed error\n')
 for service in ('crond', 'airlunix-time', 'airlunix-admin', 'airlunix-web'):
     link = root / 'etc/runlevels/default' / service
     if not link.is_symlink(): link.symlink_to('/etc/init.d/' + service)
@@ -136,4 +137,4 @@ for service in ('sshd','networking','nftables','crond'):
     target.write_text(text)
 
 network=root/'etc/network/interfaces'
-network.write_text(network.read_text().replace('iface eth0 inet dhcp','iface eth0 inet dhcp\n    udhcpc-opts -S'))
+network.write_text(network.read_text().replace('iface eth0 inet dhcp','iface eth0 inet dhcp\n    udhcpc-opts -S -s /usr/sbin/airlunix-dhcp-hook'))

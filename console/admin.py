@@ -177,6 +177,12 @@ class Admin:
                 payload={'schema':1,'release':Path('/etc/airlunix-release').read_text()[:256],
                          'health':self.log_collector.store.status(),'records':[],
                          'omissions':['Older pages','Raw diagnostic messages','Private device and network state']}
+                mem={}
+                for line in Path('/proc/meminfo').read_text().splitlines():
+                    key,value=line.split(':',1)
+                    if key in ('MemTotal','MemAvailable','Shmem'):mem[key]=int(value.split()[0])
+                payload['current_state']={'memory_kib':mem,'uptime_boot_s':time.clock_gettime(time.CLOCK_BOOTTIME),
+                    'sd_mounted':any(x.split()[0].startswith('/dev/mmc') for x in Path('/proc/mounts').read_text().splitlines())}
                 for channel in self.log_collector.store.quotas:
                     rows=self.log_collector.store.query(channel,limit=32)['records']
                     for row in rows:
