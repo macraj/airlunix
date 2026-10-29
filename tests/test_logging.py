@@ -33,6 +33,14 @@ class LoggingTests(unittest.TestCase):
             started=time.monotonic()
             for _ in range(100):emit('web','test',root=root/'absent')
             self.assertLess(time.monotonic()-started,1)
+    def test_invalid_actor_objects_are_not_serialized(self):
+        with tempfile.TemporaryDirectory(prefix='logtest-') as d:
+            root=Path(d)
+            with socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM) as receiver:
+                receiver.bind(str(root/'events.sock'));receiver.settimeout(1)
+                emit('security','failure',actor={'password':'CANARYSECRET'},root=root)
+                raw=receiver.recv(4096)
+                self.assertNotIn(b'CANARYSECRET',raw);self.assertEqual(json.loads(raw)['actor'],'')
     def test_bounded_tool_output_and_timeout(self):
         from airlunix.process import run
         r=run([sys.executable,'-c','import os;os.write(1,b"x"*200000)'],timeout=3)

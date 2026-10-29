@@ -29,11 +29,14 @@ _local_drops = 0
 def clean(value, limit=80):
     return SAFE.sub('_', str(value)[:limit])
 
+def safe_actor(value):
+    return value if isinstance(value,str) and re.fullmatch(r'[a-z][a-z0-9_-]{0,30}',value) else ''
+
 def emit(channel, event, success=True, actor='', reason='', operation='', message='', root=ROOT):
     """Best-effort, bounded, nonblocking. Never format arbitrary request bodies."""
     global _local_drops
     data = {'channel':channel, 'event':clean(event), 'success':bool(success),
-            'actor':clean(actor,31), 'reason':clean(reason), 'operation':clean(operation,32),
+            'actor':safe_actor(actor), 'reason':clean(reason), 'operation':clean(operation,32),
             'sender_drops':_local_drops}
     if channel in ('service','ntp') and message:data['message']=sanitize(message)
     try:
@@ -273,6 +276,7 @@ class Collector:
                 if c not in EVENTS or uid!=0 and c not in ('web','security'):raise ValueError()
                 record={k:clean(r.get(k,''),80) for k in ('event','actor','reason','operation')}
                 if c in ('service','ntp') and uid==0 and isinstance(r.get('message'),str):record['message']=sanitize(r['message'])
+                record['actor']=safe_actor(r.get('actor'))
                 record['success']=r.get('success') is True
                 record['severity']='info' if record['success'] else 'warning'
                 self.store.count('sender_reported_drop',min(2**31,max(0,int(r.get('sender_drops',0)))))
