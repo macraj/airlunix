@@ -314,7 +314,7 @@ class Collector:
         while not self.stop_event.is_set():
             try:
                 for key,_ in self.selector.select(1):
-                    for _ in range(32):
+                    for _ in range(2):
                         try:
                             if key.data=='kernel':
                                 raw=os.read(key.fileobj,4096)
@@ -345,7 +345,7 @@ class Collector:
                             self.service_states[service]=alive
                             self.store.append('service',{'event':'service_state','service':service,'success':alive},'lifecycle')
                 # Bound flood drain work; producers use nonblocking datagrams.
-                self.stop_event.wait(.02)
+                self.stop_event.wait(.05)
             except Exception:
                 self.store.count('worker_error');self.stop_event.wait(.1)
 
