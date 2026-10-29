@@ -1,6 +1,7 @@
 """Offline checks inside the final candidate's disposable AArch64 rootfs copy."""
 import ctypes
 import json
+import os
 from pathlib import Path
 import pip
 import ssl
@@ -13,7 +14,8 @@ import airlunix.boot_storage
 
 assert sys.version_info[:3]==(3,14,10)
 target='/tmp/final-candidate-venv'
-venv.create(target,with_pip=True)
+os.environ['PIP_NO_INDEX']='1'
+venv.create(target,with_pip=True,clear=True)
 result=subprocess.run([target+'/bin/python','-m','pip','--version'],check=True,capture_output=True,text=True)
 libraries=[]
 for name in ('libVIPhal.so','libNBGlinker.so'):

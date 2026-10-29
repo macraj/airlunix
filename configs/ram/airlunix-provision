@@ -19,9 +19,9 @@ if not re.fullmatch('[a-z][a-z0-9_]{0,30}', name) or name in ('root', 'airlunix'
 key = input('Administrator SSH public key: ').strip()
 if not key.startswith(('ssh-ed25519 ', 'sk-ssh-ed25519@openssh.com ')) or '\n' in key:
     raise SystemExit('An Ed25519 public key is required')
-password = getpass.getpass('New local console / doas password (12+ characters): ')
-if len(password) < 12 or getpass.getpass('Repeat password: ') != password:
-    raise SystemExit('Password length or confirmation failed')
+password = getpass.getpass('New local console / doas password: ')
+if not password or getpass.getpass('Repeat password: ') != password:
+    raise SystemExit('A nonempty password and matching confirmation are required')
 Path('/run/provision-key.pub').write_text(key + '\n')
 subprocess.run(['ssh-keygen', '-l', '-f', '/run/provision-key.pub'], check=True,
                stdout=subprocess.DEVNULL)

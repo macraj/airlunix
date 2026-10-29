@@ -1,0 +1,350 @@
+{
+  "status": "private developer-preview candidate; not accepted or cleared for publication",
+  "source_revision": "d53541e872603788ab2f14014f596a54035ae46e",
+  "source_relation": "Build-input source bytes match committed source; retrospective recording after assembly, not a signed at-build attestation",
+  "build_id": "1024caf2bfcfeb72",
+  "artifacts": [
+    {
+      "file": "airlunix-0.3.0-headless-server-a733.img",
+      "bytes": 805306368,
+      "MiB": 768.0,
+      "sha256": "b90ccf5fbba2ba6737fa4ad77080bc682c9047a08be60576fa0d57f78c8430dc"
+    },
+    {
+      "file": "airlunix-0.3.0-headless-server-a733.img.xz",
+      "bytes": 65673328,
+      "MiB": 62.63096618652344,
+      "sha256": "e36e1f57becb30e6411b1f536687839acc16997af8d180e0199c61ae47e5349f"
+    },
+    {
+      "file": "airlunix-0.3.0-runtime.cpio.gz",
+      "bytes": 57291043,
+      "MiB": 54.636996269226074,
+      "sha256": "403856e964c077727e3e65b8febd75dd697957c4d8a39243045ca2374c56e19c"
+    }
+  ],
+  "compression": "XZ, xz -T2 -6 -k; raw image retained",
+  "partition": {
+    "table": "DOS/MBR",
+    "logical_sector_bytes": 512,
+    "start_sector": 65536,
+    "sectors": 1507328,
+    "bytes": 771751936,
+    "label": "airlunix-state",
+    "filesystem": "ext4",
+    "block_size": 4096,
+    "blocks": 188416,
+    "used_blocks": 27373,
+    "free_blocks": 161043,
+    "automatic_expansion": false
+  },
+  "minimum_card_bytes_by_layout": 805306368,
+  "physical_minimum_card_test": "not performed; actual card must expose at least image bytes",
+  "board_ram_requirement": "new candidate not booted on board; minimum unmeasured",
+  "console_included": true,
+  "console_source_runtime_matches": [
+    {
+      "source": "console/__init__.py",
+      "runtime": "usr/lib/python3.14/site-packages/airlunix/__init__.py",
+      "sha256": "ff1df0afe3589741ff8611bddc18ce71a3076a5d308c77f69eeeec71c3587b58"
+    },
+    {
+      "source": "console/admin.py",
+      "runtime": "usr/lib/python3.14/site-packages/airlunix/admin.py",
+      "sha256": "2e9204223092aa7bfe1a282bd89b104abd90448349c0a342b5c3ba1a98fcc7b3"
+    },
+    {
+      "source": "console/boot_storage.py",
+      "runtime": "usr/lib/python3.14/site-packages/airlunix/boot_storage.py",
+      "sha256": "9659de02b3d0200c2f04f128e03cabb9628baa5453d149eb193949c73d56103b"
+    },
+    {
+      "source": "console/setup.py",
+      "runtime": "usr/lib/python3.14/site-packages/airlunix/setup.py",
+      "sha256": "cf9a306be7601cf927087f9b13d0566f1b1a561446527352f3aa38aceea16195"
+    },
+    {
+      "source": "console/storage.py",
+      "runtime": "usr/lib/python3.14/site-packages/airlunix/storage.py",
+      "sha256": "a7c209b533445f7b55c67e3771712ee4cd44a30cc0f7a4378921c62fd977ba8e"
+    },
+    {
+      "source": "console/telemetry.py",
+      "runtime": "usr/lib/python3.14/site-packages/airlunix/telemetry.py",
+      "sha256": "4cee74a768afbeaea35d6462b1cc397054f337b6b4bd8459bef3cf6dbc41f9fd"
+    },
+    {
+      "source": "console/web.py",
+      "runtime": "usr/lib/python3.14/site-packages/airlunix/web.py",
+      "sha256": "7fb90d7597f5f3c92eb0a3d3363de028d22afcc95992b1339cc022025da3f45f"
+    },
+    {
+      "source": "web/app.css",
+      "runtime": "usr/share/airlunix-web/app.css",
+      "sha256": "cfec92652894c7fd6c221da9e7bfa4700ee767110d93f759c52b97970641b4c8"
+    },
+    {
+      "source": "web/app.js",
+      "runtime": "usr/share/airlunix-web/app.js",
+      "sha256": "0b72b1f13a9420979a360ac5811806cd342a3bf0c98292a24bceaaf033c20336"
+    },
+    {
+      "source": "web/index.html",
+      "runtime": "usr/share/airlunix-web/index.html",
+      "sha256": "27a27cf1dc25a0662c701df7f61a3b21ae137044457597ea3c7f2edb289d09ae"
+    }
+  ],
+  "target_python_image_file_matches": 2136,
+  "locked_inputs": [
+    {
+      "file": "downloads/airlunix-apks/e2fsprogs-1.47.4-r0.apk",
+      "sha256": "52fd401e79ce6b0ff7648733ba4de3135083cd0132543534e72106e7ea767a00",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/e2fsprogs-extra-1.47.4-r0.apk",
+      "sha256": "70b0a01bf62349263a8f400809c7512e991b7db13dbebbf9b3a1cb3b3d21efcc",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/e2fsprogs-libs-1.47.4-r0.apk",
+      "sha256": "52124971ae397d599aadd79263fcd68fc9e271922ccf8185b124f35fe24c60c8",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/gdbm-1.26-r0.apk",
+      "sha256": "bad50eb26533e2f58e014fbcd3c1744f2fdb79954af6e3c188ccd059251c7790",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libblkid-2.42.3-r1.apk",
+      "sha256": "9d0f24976c575c53c12526b6e078edf34c980c153bc8e5f1c1053cbece5b8cfa",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libbz2-1.0.8-r6.apk",
+      "sha256": "28cb76bb6d11d2a55c3061b5fcb2ab84996412a248b2c9fe52bb710d0a2a84e7",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libcom_err-1.47.4-r0.apk",
+      "sha256": "a75b5955ff57046e33fc2842cfe466dc77d8e68305d5c86c6646b38a069490a2",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libcrypto3-3.5.9-r0.apk",
+      "sha256": "2676a2b0b6e23ea2edccf3ee982b9842a665d52603d047de3d0a185dc316d983",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libeconf-0.8.3-r0.apk",
+      "sha256": "cf0899d49ded0a6891e3cdf1b37887f2ecd77293afe1d8f3cb8937763c83f183",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libexpat-2.9.0-r0.apk",
+      "sha256": "7128bfe18b8a315b9cf90ddf0beffeee454648ae72ff7898ff7d7b09803a559d",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libffi-3.5.2-r1.apk",
+      "sha256": "9a67280b0c7c62db658c2d4d32ed1199903bef859c32dd4245e1a7e35c89ab4b",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libgcc-15.2.0-r5.apk",
+      "sha256": "369aaa6e9d099a737bad6dd3e6c2fe7bb1547ca26d22b94ee0411228f709b403",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libncursesw-6.6_p20260516-r0.apk",
+      "sha256": "51a7aa4b3ec40b144d0801c0544e0a9f62e2a41d04b6067bb5e95786040741c6",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libpanelw-6.6_p20260516-r0.apk",
+      "sha256": "a6912c654c821db4f8a801321709205bd482b0e515b862f2d02045e21b73d97d",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libssl3-3.5.9-r0.apk",
+      "sha256": "20ac252b276d73f2c69c1d25f84537c7fba81caefc026c6be1094b394af2082e",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libstdc++-15.2.0-r5.apk",
+      "sha256": "2302e766d4e4926038ec166ecb85837ee884576115236ddb565e3a5fca4a11d7",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/libuuid-2.42.3-r1.apk",
+      "sha256": "9ce20c7ffe2ccaa7c321893c10564abbca13c3f2edb82f60a35f1f68e004f86c",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/mpdecimal-4.0.1-r0.apk",
+      "sha256": "358959600f99f58deee30ca9089c7f6f0f1bd73cc0021e321a7dbf6f735935c6",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/musl-1.2.6-r3.apk",
+      "sha256": "2e17864102278d9049c3a56f1bceed9e8cf287065617e579325123443daed8a5",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/ncurses-terminfo-base-6.6_p20260516-r0.apk",
+      "sha256": "e0c546b9461bdce206a90bc720cb69aa4628b5a5b8d908c3e5084e00f28f6a9d",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/openssl-3.5.9-r0.apk",
+      "sha256": "aa27b9edfeffbf7ebafbcf29df3f02eef4bf50f793a4874ae2f52aba6b53e653",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/py3-pip-26.1.2-r0.apk",
+      "sha256": "c6f12afeaf15c7f4c4d2f9d4e4f3203da2f71a3fc2ba5fe7846cf0d8d8cd15dc",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/py3-pip-pyc-26.1.2-r0.apk",
+      "sha256": "c0e417e669c35724ce74c1e90c66ea80dec4a8883a3e7e0f5045b2023c16b9ea",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/pyc-3.14.10-r1.apk",
+      "sha256": "327b6fa5948e31d6794fd1e49b2b0a06f0d411f37b7942ee906a00f6e3b9a3c3",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/python3-3.14.10-r1.apk",
+      "sha256": "980b5108e756f1aae298c041ef6bb229b655b7a5393b8c001f6bac8a03825429",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/python3-pyc-3.14.10-r1.apk",
+      "sha256": "9dbc6bf33d5c90c51d90bf00ea93e94fc52c0d8d5e8076e557479fd2062bfadf",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/python3-pycache-pyc0-3.14.10-r1.apk",
+      "sha256": "7efec44a37bcb3c958b07f523de214da3ae0e8fb9c4e45cbc2709d7fae15a4a1",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/readline-8.3.3-r1.apk",
+      "sha256": "9f0ae0923c02b0d6aba62e9173542b65396ba3f0efefcbf087ea32f1120e7b34",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/sqlite-libs-3.53.4-r0.apk",
+      "sha256": "b39d8d73c1208838a436f2d481ba605b52a095f8d6ff781556eafc81cd1a13e9",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/xz-libs-5.8.4-r0.apk",
+      "sha256": "9be375832e747afe14f98e400e8b55d8f6fde25e41663090c81600628daab093",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "downloads/airlunix-apks/zlib-1.3.2-r1.apk",
+      "sha256": "1f77a542ac6634761b9fe38d8bdca19b154071dcfa25432e73f2bc8a0740a33f",
+      "manifest": "configs/airlunix-apks.sha256"
+    },
+    {
+      "file": "output/kernel/boot/Image",
+      "sha256": "6c36aa3374bad044c7baaaafac2170c06af5b98f962c346e935617d3ac5faffd",
+      "manifest": "configs/airlunix-board-artifacts.sha256"
+    },
+    {
+      "file": "output/kernel/boot/dtb/allwinner/sun60i-a733-orangepi-4-pro.dtb",
+      "sha256": "4d7d964a54668cf5dc12cd4bf7e72a625c79883541272aeba1a91adbbedb86ed",
+      "manifest": "configs/airlunix-board-artifacts.sha256"
+    },
+    {
+      "file": "output/uboot/mkimage",
+      "sha256": "ad6c2f9043f8f26820586674659b845743fdf0d93791e0b98cd631b39d2d4d50",
+      "manifest": "configs/airlunix-board-artifacts.sha256"
+    },
+    {
+      "file": "output/uboot/boot0_sdcard.fex",
+      "sha256": "9213f1c56ef932930d43b5751e8937bea0e9ae7460ec16187cc1b0dffdb75345",
+      "manifest": "configs/airlunix-board-artifacts.sha256"
+    },
+    {
+      "file": "output/uboot/boot_package.fex",
+      "sha256": "17869ee6e869b8deb94746ca2482850f4dd85644fc1827e6321d9879edd83ad5",
+      "manifest": "configs/airlunix-board-artifacts.sha256"
+    },
+    {
+      "file": "build/kernel/arch/arm64/boot/dts/allwinner/overlay/sun60i-a733-uart7.dtbo",
+      "sha256": "ee6dc7cb5ee06fe77723eafea7b1592f82567b30d0569d672d9075ef61c7c2e0",
+      "manifest": "configs/airlunix-board-artifacts.sha256"
+    },
+    {
+      "file": "downloads/host-tools/apk-static/sbin/apk.static",
+      "sha256": "5118a57ae7c07e13268a754f78aa9c7d39a0bed708bb11c101d78e2a884cee5d",
+      "manifest": "configs/airlunix-board-artifacts.sha256"
+    },
+    {
+      "file": "downloads/boot-sun60iw2.cmd",
+      "sha256": "141a90676af16385d26e09e6d7ae51fb2fb2fb53825e94d834c02b1d6f915960",
+      "manifest": "configs/airlunix-board-artifacts.sha256"
+    },
+    {
+      "file": "build/airlunix/rootfs-input.tar",
+      "sha256": "2eaf5bcfcb91079c375a031e809203f7cd5ff169b850907893966063c37d98b1",
+      "manifest": "configs/airlunix-rootfs-input.sha256"
+    }
+  ],
+  "npu_components": [
+    {
+      "file": "lib/modules/6.6.98-sun60iw2/kernel/bsp/drivers/npu/aw_nna_vip/vip2/vipcore.ko",
+      "bytes": 4722448,
+      "sha256": "7edfbfe3223c9dfed18715cd66bf4c5749870b49a9533eec884448e062aa8690",
+      "validation": "image presence/hash only; hardware execution not tested on this candidate"
+    },
+    {
+      "file": "usr/bin/opi-vpm-run",
+      "bytes": 38696,
+      "sha256": "dbcea3266070d51a4e0b3aac19540814d065f3727a6045ee96e25f9464371407",
+      "validation": "image presence/hash only; hardware execution not tested on this candidate"
+    },
+    {
+      "file": "usr/lib/libNBGlinker.so",
+      "bytes": 174560,
+      "sha256": "de93bb4a7d86af67bc4ca597d12228b9b21b062601b18f33ca30393a2af4a842",
+      "validation": "image presence/hash only; hardware execution not tested on this candidate"
+    },
+    {
+      "file": "usr/lib/libVIPhal.so",
+      "bytes": 39248,
+      "sha256": "648444a26a1aeaec0182c0ba348b7a453134b8ccdf8282a211ce4c0f5e5e51a0",
+      "validation": "image presence/hash only; hardware execution not tested on this candidate"
+    },
+    {
+      "file": "usr/share/opi-npu/vpm_run/input_0.dat",
+      "bytes": 150528,
+      "sha256": "d38c22c2007db314572c9ddfeb513a9f3d11ec99e8deec0f65bc91481502f1b9",
+      "validation": "image presence/hash only; hardware execution not tested on this candidate"
+    },
+    {
+      "file": "usr/share/opi-npu/vpm_run/network_binary.nb",
+      "bytes": 964224,
+      "sha256": "fc0d50bdc863e4dfc74eef6dad9d34655c560e759a2f426979a01c505fa9b95f",
+      "validation": "image presence/hash only; hardware execution not tested on this candidate"
+    }
+  ],
+  "branding_scan": "no prior product marketing references in inspected user-facing runtime paths; legal notices retained",
+  "raw_size_delta_vs_previous_base": 0,
+  "runtime_cpio_delta_vs_previous_base": 2205696,
+  "runtime_gzip_delta_vs_previous_base": 584403,
+  "compressed_delta_vs_previous_base_same_settings": 565072,
+  "limits": [
+    "No physical board boot or console resource/SD-I/O test for this image",
+    "Private historical rootfs snapshot remains an input; public clean bootstrap and source closure incomplete",
+    "Not all prebuilt board artifacts have independently reconstructed source-to-binary provenance",
+    "Component redistribution rights and project-owned-code licence remain unresolved",
+    "Bit-for-bit second-build reproducibility not tested"
+  ]
+}

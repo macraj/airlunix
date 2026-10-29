@@ -1,0 +1,1554 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "operating-system",
+      "name": "Airlunix Headless Server",
+      "version": "0.3.0"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "alpine-base",
+      "version": "3.24.3-r0",
+      "purl": "pkg:apk/alpine/alpine-base@3.24.3-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://alpinelinux.org"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "alpine-base"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alpine-baselayout",
+      "version": "3.7.2-r1",
+      "purl": "pkg:apk/alpine/alpine-baselayout@3.7.2-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-only"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/master/main/alpine-baselayout"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "alpine-baselayout"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alpine-baselayout-data",
+      "version": "3.7.2-r1",
+      "purl": "pkg:apk/alpine/alpine-baselayout-data@3.7.2-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-only"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/master/main/alpine-baselayout"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "alpine-baselayout"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alpine-conf",
+      "version": "3.22.0-r0",
+      "purl": "pkg:apk/alpine/alpine-conf@3.22.0-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://gitlab.alpinelinux.org/alpine/alpine-conf"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "alpine-conf"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alpine-keys",
+      "version": "2.6-r0",
+      "purl": "pkg:apk/alpine/alpine-keys@2.6-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://alpinelinux.org"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "alpine-keys"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alpine-release",
+      "version": "3.24.2-r0",
+      "purl": "pkg:apk/alpine/alpine-release@3.24.2-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://alpinelinux.org"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "alpine-base"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "apk-tools",
+      "version": "3.0.8-r0",
+      "purl": "pkg:apk/alpine/apk-tools@3.0.8-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-only"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://gitlab.alpinelinux.org/alpine/apk-tools"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "apk-tools"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "bridge",
+      "version": "1.5-r5",
+      "purl": "pkg:apk/alpine/bridge@1.5-r5?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://wiki.alpinelinux.org/wiki/Bridge"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "bridge"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "busybox",
+      "version": "1.37.0-r31",
+      "purl": "pkg:apk/alpine/busybox@1.37.0-r31?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-only"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://busybox.net/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "busybox"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "busybox-binsh",
+      "version": "1.37.0-r31",
+      "purl": "pkg:apk/alpine/busybox-binsh@1.37.0-r31?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-only"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://busybox.net/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "busybox"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "busybox-mdev-openrc",
+      "version": "1.37.0-r31",
+      "purl": "pkg:apk/alpine/busybox-mdev-openrc@1.37.0-r31?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-only"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://busybox.net/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "busybox"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "busybox-openrc",
+      "version": "1.37.0-r31",
+      "purl": "pkg:apk/alpine/busybox-openrc@1.37.0-r31?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-only"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://busybox.net/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "busybox"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "busybox-suid",
+      "version": "1.37.0-r31",
+      "purl": "pkg:apk/alpine/busybox-suid@1.37.0-r31?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-only"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://busybox.net/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "busybox"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ca-certificates-bundle",
+      "version": "20260909-r0",
+      "purl": "pkg:apk/alpine/ca-certificates-bundle@20260909-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MPL-2.0 AND MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.mozilla.org/en-US/about/governance/policies/security-group/certs/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "ca-certificates"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "chrony",
+      "version": "4.8-r7",
+      "purl": "pkg:apk/alpine/chrony@4.8-r7?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://chrony-project.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "chrony"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "chrony-common",
+      "version": "4.8-r7",
+      "purl": "pkg:apk/alpine/chrony-common@4.8-r7?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://chrony-project.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "chrony"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "chrony-openrc",
+      "version": "4.8-r7",
+      "purl": "pkg:apk/alpine/chrony-openrc@4.8-r7?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://chrony-project.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "chrony"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "doas",
+      "version": "6.8.2-r8",
+      "purl": "pkg:apk/alpine/doas@6.8.2-r8?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "ISC"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://github.com/Duncaen/OpenDoas"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "doas"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "e2fsprogs",
+      "version": "1.47.4-r0",
+      "purl": "pkg:apk/alpine/e2fsprogs@1.47.4-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later AND LGPL-2.0-or-later AND BSD-3-Clause AND MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://e2fsprogs.sourceforge.net/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "e2fsprogs"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "e2fsprogs-extra",
+      "version": "1.47.4-r0",
+      "purl": "pkg:apk/alpine/e2fsprogs-extra@1.47.4-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later AND LGPL-2.0-or-later AND BSD-3-Clause AND MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://e2fsprogs.sourceforge.net/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "e2fsprogs"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "e2fsprogs-libs",
+      "version": "1.47.4-r0",
+      "purl": "pkg:apk/alpine/e2fsprogs-libs@1.47.4-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later AND LGPL-2.0-or-later AND BSD-3-Clause AND MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://e2fsprogs.sourceforge.net/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "e2fsprogs"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "gcompat",
+      "version": "1.1.0-r4",
+      "purl": "pkg:apk/alpine/gcompat@1.1.0-r4?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "NCSA"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://git.adelielinux.org/adelie/gcompat"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "gcompat"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "gdbm",
+      "version": "1.26-r0",
+      "purl": "pkg:apk/alpine/gdbm@1.26-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-3.0-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.gnu.org/software/gdbm/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "gdbm"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "gmp",
+      "version": "6.3.0-r4",
+      "purl": "pkg:apk/alpine/gmp@6.3.0-r4?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "LGPL-3.0-or-later OR GPL-2.0-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://gmplib.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "gmp"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ifupdown-ng",
+      "version": "0.13.0-r0",
+      "purl": "pkg:apk/alpine/ifupdown-ng@0.13.0-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "ISC"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://github.com/ifupdown-ng/ifupdown-ng"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "ifupdown-ng"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jansson",
+      "version": "2.15.0-r0",
+      "purl": "pkg:apk/alpine/jansson@2.15.0-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "http://www.digip.org/jansson/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "jansson"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libapk",
+      "version": "3.0.8-r0",
+      "purl": "pkg:apk/alpine/libapk@3.0.8-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-only"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://gitlab.alpinelinux.org/alpine/apk-tools"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "apk-tools"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libblkid",
+      "version": "2.42.3-r1",
+      "purl": "pkg:apk/alpine/libblkid@2.42.3-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "LGPL-2.1-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://git.kernel.org/cgit/utils/util-linux/util-linux.git"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "util-linux"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libbz2",
+      "version": "1.0.8-r6",
+      "purl": "pkg:apk/alpine/libbz2@1.0.8-r6?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "bzip2-1.0.6"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://sourceware.org/bzip2/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "bzip2"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libcap2",
+      "version": "2.78-r0",
+      "purl": "pkg:apk/alpine/libcap2@2.78-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "BSD-3-Clause OR GPL-2.0-only"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://sites.google.com/site/fullycapable/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "libcap"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libcom_err",
+      "version": "1.47.4-r0",
+      "purl": "pkg:apk/alpine/libcom_err@1.47.4-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later AND LGPL-2.0-or-later AND BSD-3-Clause AND MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://e2fsprogs.sourceforge.net/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "e2fsprogs"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libcrypto3",
+      "version": "3.5.9-r0",
+      "purl": "pkg:apk/alpine/libcrypto3@3.5.9-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "Apache-2.0"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.openssl.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openssl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libeconf",
+      "version": "0.8.3-r0",
+      "purl": "pkg:apk/alpine/libeconf@0.8.3-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://github.com/openSUSE/libeconf"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "libeconf"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libedit",
+      "version": "20260508.3.1-r1",
+      "purl": "pkg:apk/alpine/libedit@20260508.3.1-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "BSD-3-Clause"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.thrysoee.dk/editline"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "libedit"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libexpat",
+      "version": "2.9.0-r0",
+      "purl": "pkg:apk/alpine/libexpat@2.9.0-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://libexpat.github.io/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "expat"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libffi",
+      "version": "3.5.2-r1",
+      "purl": "pkg:apk/alpine/libffi@3.5.2-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://sourceware.org/libffi/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "libffi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libgcc",
+      "version": "15.2.0-r5",
+      "purl": "pkg:apk/alpine/libgcc@15.2.0-r5?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later AND LGPL-2.1-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://gcc.gnu.org"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "gcc"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libmnl",
+      "version": "1.0.5-r2",
+      "purl": "pkg:apk/alpine/libmnl@1.0.5-r2?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "LGPL-2.1-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.netfilter.org/projects/libmnl/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "libmnl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libncursesw",
+      "version": "6.6_p20260516-r0",
+      "purl": "pkg:apk/alpine/libncursesw@6.6_p20260516-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "X11"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://invisible-island.net/ncurses/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "ncurses"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libnftnl",
+      "version": "1.3.1-r0",
+      "purl": "pkg:apk/alpine/libnftnl@1.3.1-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://netfilter.org/projects/libnftnl"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "libnftnl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libpanelw",
+      "version": "6.6_p20260516-r0",
+      "purl": "pkg:apk/alpine/libpanelw@6.6_p20260516-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "X11"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://invisible-island.net/ncurses/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "ncurses"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libseccomp",
+      "version": "2.6.1-r0",
+      "purl": "pkg:apk/alpine/libseccomp@2.6.1-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "LGPL-2.1-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://github.com/seccomp/libseccomp"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "libseccomp"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libssl3",
+      "version": "3.5.9-r0",
+      "purl": "pkg:apk/alpine/libssl3@3.5.9-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "Apache-2.0"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.openssl.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openssl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libstdc++",
+      "version": "15.2.0-r5",
+      "purl": "pkg:apk/alpine/libstdc++@15.2.0-r5?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later AND LGPL-2.1-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://gcc.gnu.org"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "gcc"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libucontext",
+      "version": "1.5.1-r0",
+      "purl": "pkg:apk/alpine/libucontext@1.5.1-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "ISC"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://github.com/kaniini/libucontext"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "libucontext"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libuuid",
+      "version": "2.42.3-r1",
+      "purl": "pkg:apk/alpine/libuuid@2.42.3-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "BSD-3-Clause"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://git.kernel.org/cgit/utils/util-linux/util-linux.git"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "util-linux"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mdev-conf",
+      "version": "4.10-r0",
+      "purl": "pkg:apk/alpine/mdev-conf@4.10-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://gitlab.alpinelinux.org/alpine/mdev-conf"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "mdev-conf"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mpdecimal",
+      "version": "4.0.1-r0",
+      "purl": "pkg:apk/alpine/mpdecimal@4.0.1-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "BSD-2-Clause"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.bytereef.org/mpdecimal/index.html"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "mpdecimal"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "musl",
+      "version": "1.2.6-r3",
+      "purl": "pkg:apk/alpine/musl@1.2.6-r3?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://musl.libc.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "musl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "musl-obstack",
+      "version": "1.2.3-r2",
+      "purl": "pkg:apk/alpine/musl-obstack@1.2.3-r2?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://github.com/void-linux/musl-obstack"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "musl-obstack"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "musl-utils",
+      "version": "1.2.6-r2",
+      "purl": "pkg:apk/alpine/musl-utils@1.2.6-r2?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT AND BSD-2-Clause AND GPL-2.0-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://musl.libc.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "musl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ncurses-terminfo-base",
+      "version": "6.6_p20260516-r0",
+      "purl": "pkg:apk/alpine/ncurses-terminfo-base@6.6_p20260516-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "X11"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://invisible-island.net/ncurses/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "ncurses"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nftables",
+      "version": "1.1.6-r1",
+      "purl": "pkg:apk/alpine/nftables@1.1.6-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://netfilter.org/projects/nftables"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "nftables"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nftables-openrc",
+      "version": "1.1.6-r1",
+      "purl": "pkg:apk/alpine/nftables-openrc@1.1.6-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://netfilter.org/projects/nftables"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "nftables"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openrc",
+      "version": "0.63.2-r0",
+      "purl": "pkg:apk/alpine/openrc@0.63.2-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "BSD-2-Clause"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://github.com/OpenRC/openrc"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openrc"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openrc-user",
+      "version": "0.63.2-r0",
+      "purl": "pkg:apk/alpine/openrc-user@0.63.2-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "BSD-2-Clause"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://github.com/OpenRC/openrc"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openrc"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssh",
+      "version": "10.3_p1-r1",
+      "purl": "pkg:apk/alpine/openssh@10.3_p1-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "SSH-OpenSSH"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.openssh.com/portable.html"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openssh"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssh-client-common",
+      "version": "10.3_p1-r1",
+      "purl": "pkg:apk/alpine/openssh-client-common@10.3_p1-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "SSH-OpenSSH"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.openssh.com/portable.html"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openssh"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssh-client-default",
+      "version": "10.3_p1-r1",
+      "purl": "pkg:apk/alpine/openssh-client-default@10.3_p1-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "SSH-OpenSSH"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.openssh.com/portable.html"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openssh"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssh-keygen",
+      "version": "10.3_p1-r1",
+      "purl": "pkg:apk/alpine/openssh-keygen@10.3_p1-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "SSH-OpenSSH"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.openssh.com/portable.html"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openssh"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssh-server",
+      "version": "10.3_p1-r1",
+      "purl": "pkg:apk/alpine/openssh-server@10.3_p1-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "SSH-OpenSSH"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.openssh.com/portable.html"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openssh"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssh-server-common",
+      "version": "10.3_p1-r1",
+      "purl": "pkg:apk/alpine/openssh-server-common@10.3_p1-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "SSH-OpenSSH"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.openssh.com/portable.html"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openssh"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssh-server-common-openrc",
+      "version": "10.3_p1-r1",
+      "purl": "pkg:apk/alpine/openssh-server-common-openrc@10.3_p1-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "SSH-OpenSSH"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.openssh.com/portable.html"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openssh"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssh-sftp-server",
+      "version": "10.3_p1-r1",
+      "purl": "pkg:apk/alpine/openssh-sftp-server@10.3_p1-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "SSH-OpenSSH"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.openssh.com/portable.html"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openssh"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssl",
+      "version": "3.5.9-r0",
+      "purl": "pkg:apk/alpine/openssl@3.5.9-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "Apache-2.0"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.openssl.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "openssl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "py3-pip",
+      "version": "26.1.2-r0",
+      "purl": "pkg:apk/alpine/py3-pip@26.1.2-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://pip.pypa.io"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "py3-pip"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "py3-pip-pyc",
+      "version": "26.1.2-r0",
+      "purl": "pkg:apk/alpine/py3-pip-pyc@26.1.2-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "MIT"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://pip.pypa.io"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "py3-pip"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pyc",
+      "version": "3.14.10-r1",
+      "purl": "pkg:apk/alpine/pyc@3.14.10-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "PSF-2.0"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.python.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "python3"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python3",
+      "version": "3.14.10-r1",
+      "purl": "pkg:apk/alpine/python3@3.14.10-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "PSF-2.0"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.python.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "python3"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python3-pyc",
+      "version": "3.14.10-r1",
+      "purl": "pkg:apk/alpine/python3-pyc@3.14.10-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "PSF-2.0"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.python.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "python3"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python3-pycache-pyc0",
+      "version": "3.14.10-r1",
+      "purl": "pkg:apk/alpine/python3-pycache-pyc0@3.14.10-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "PSF-2.0"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.python.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "python3"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "readline",
+      "version": "8.3.3-r1",
+      "purl": "pkg:apk/alpine/readline@8.3.3-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-3.0-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://tiswww.cwru.edu/php/chet/readline/rltop.html"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "readline"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "scanelf",
+      "version": "1.3.9-r1",
+      "purl": "pkg:apk/alpine/scanelf@1.3.9-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-only"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://wiki.gentoo.org/wiki/Hardened/PaX_Utilities"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "pax-utils"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sqlite-libs",
+      "version": "3.53.4-r0",
+      "purl": "pkg:apk/alpine/sqlite-libs@3.53.4-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "blessing"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://www.sqlite.org/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "sqlite"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ssl_client",
+      "version": "1.37.0-r31",
+      "purl": "pkg:apk/alpine/ssl_client@1.37.0-r31?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-only"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://busybox.net/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "busybox"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xz-libs",
+      "version": "5.8.4-r0",
+      "purl": "pkg:apk/alpine/xz-libs@5.8.4-r0?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "GPL-2.0-or-later AND 0BSD AND Public-Domain AND LGPL-2.1-or-later"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://tukaani.org/xz/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "xz"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "zlib",
+      "version": "1.3.2-r1",
+      "purl": "pkg:apk/alpine/zlib@1.3.2-r1?arch=aarch64",
+      "properties": [
+        {
+          "name": "alpine:declared-license",
+          "value": "Zlib"
+        },
+        {
+          "name": "upstream:url",
+          "value": "https://zlib.net/"
+        },
+        {
+          "name": "alpine:origin",
+          "value": "zlib"
+        }
+      ]
+    }
+  ]
+}

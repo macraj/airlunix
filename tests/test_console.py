@@ -77,6 +77,30 @@ class ConsoleTests(unittest.TestCase):
                 with self.assertRaises(ValueError):Accounts().create(name,'password')
             with self.assertRaises(ValueError):Accounts().change('operator','line\nbreak')
             run.assert_not_called()
+    def test_dirty_state_survives_helper_restart_and_save_clears_it(self):
+        self.call('create_user',name='third',new_password='changed')
+        self.assertTrue(self.call('save_status')['unsaved_changes'])
+        self.admin=type(self.admin)(self.accounts,state=Path(self.temp.name),persist=lambda:{'success':True,'sd_unmounted':True})
+        self.assertTrue(self.call('save_status')['unsaved_changes'])
+        self.call('save')
+        self.assertFalse(self.call('save_status')['unsaved_changes'])
+    def test_storage_preview_expiry_confirmation_and_single_use(self):
+        class FixtureMedia:
+            disk=Path('/dev/fixture')
+            def check_idle(inner):pass
+            def inspect(inner):return {'identity':'isolated fixture','mbr_sha256':'fixed','capacity_sectors':400000,
+                'partitions':[{'number':1,'start':65536,'end':196608,'sectors':131072}],
+                'unallocated':[{'start':196608,'end':400000,'sectors':203392}]}
+            def execute(inner,preview):return {'success':True,'mounted_after':False}
+        self.admin.media=FixtureMedia()
+        preview=self.call('storage_preview',action='expand')
+        with self.assertRaises(StorageError):self.call('storage_apply',token=preview['token'],confirmation='different')
+        with self.assertRaises(StorageError):self.call('storage_apply',token=preview['token'],confirmation='fixture')
+        preview=self.call('storage_preview',action='expand')
+        self.admin.plans[preview['token']]['expires']=0
+        with self.assertRaises(StorageError):self.call('storage_apply',token=preview['token'],confirmation='fixture')
+        preview=self.call('storage_preview',action='expand')
+        self.assertTrue(self.call('storage_apply',token=preview['token'],confirmation='fixture')['durable_immediately'])
 
 def make_image(path,size=192*1024*1024,part=64*1024*1024):
     mbr=bytearray(512);mbr[:20]=b'Airlunix test guard!!';mbr[510:]=b'\x55\xaa'

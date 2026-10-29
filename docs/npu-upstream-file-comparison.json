@@ -1,0 +1,167 @@
+{
+  "repository": "https://github.com/ZIFENG278/ai-sdk",
+  "revision": "fc90006d0f6569da2f6726c2d8395877686f5aca",
+  "files": [
+    {
+      "file": "examples/multi_thread/README.md",
+      "bytes": 455,
+      "sha256": "2e40d703fc603416973d5d8d4d36cfec630cb624d23df0af1de3b781ddff55a0",
+      "git_blob": "0a63eb77e3e7cd1cfe5976947da8bad65c98d167",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/examples/multi_thread/README.md"
+    },
+    {
+      "file": "examples/resnet50/README.md",
+      "bytes": 681,
+      "sha256": "94527001e79746522b19b275610a5b189f8f89fb753fb89c6426c61b87939559",
+      "git_blob": "3e6d36d57128dd1427b6899e5783586b22b2be8c",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/examples/resnet50/README.md"
+    },
+    {
+      "file": "examples/vpm_run/operator/input_0.dat",
+      "bytes": 150528,
+      "sha256": "d38c22c2007db314572c9ddfeb513a9f3d11ec99e8deec0f65bc91481502f1b9",
+      "git_blob": "a1d4888933d26160f98cdf564aa151e7b864141b",
+      "matches_orange_pi_file": true,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/examples/vpm_run/operator/input_0.dat"
+    },
+    {
+      "file": "examples/vpm_run/operator/v3/network_binary.nb",
+      "bytes": 964224,
+      "sha256": "fc0d50bdc863e4dfc74eef6dad9d34655c560e759a2f426979a01c505fa9b95f",
+      "git_blob": "7803dc9a7c4e2feb4ff1fd5d0b41e3cb9e007e0c",
+      "matches_orange_pi_file": true,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/examples/vpm_run/operator/v3/network_binary.nb"
+    },
+    {
+      "file": "examples/vpm_run/readme.txt",
+      "bytes": 678,
+      "sha256": "c4b04f4bb8627f89b46fcaf80ed595ea6964f523ebd5bd096a7d04825486aea4",
+      "git_blob": "3017f09b899c455a486611551b7c396fb10ba618",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/examples/vpm_run/readme.txt"
+    },
+    {
+      "file": "examples/yolact/README.md",
+      "bytes": 496,
+      "sha256": "ff4f174506609a7237b9698381200cb12b92f13e130160e978d601b250d54096",
+      "git_blob": "f924d993bc7a206c133f3c067b2ae3f2256ba6a0",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/examples/yolact/README.md"
+    },
+    {
+      "file": "examples/yolov5/README.md",
+      "bytes": 1302,
+      "sha256": "a52fcb51ac7f452af7d638cdd6fa18452ade80dad9a93a1d754ad10f6a387801",
+      "git_blob": "2af872a55679322723a0f2c379cd324ed846a739",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/examples/yolov5/README.md"
+    },
+    {
+      "file": "models/README.md",
+      "bytes": 197,
+      "sha256": "c2f3003c007f96c0f879551ed52bda44eee557ebb1be8723d223e87d059fd410",
+      "git_blob": "18b8a8594d41adafabb4300b57ab0b2a60b469a6",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/models/README.md"
+    },
+    {
+      "file": "models/ReadMe.txt",
+      "bytes": 2006,
+      "sha256": "f92dea0fcb3cfb45cbd883f08b567ffb7bb90d8c33ce0705e0a809b7e2fe2197",
+      "git_blob": "69528aacb9fa5cda9a91e913cd1ed2f0a37207c3",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/models/ReadMe.txt"
+    },
+    {
+      "file": "scripts/README.md",
+      "bytes": 197,
+      "sha256": "c2f3003c007f96c0f879551ed52bda44eee557ebb1be8723d223e87d059fd410",
+      "git_blob": "18b8a8594d41adafabb4300b57ab0b2a60b469a6",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/scripts/README.md"
+    },
+    {
+      "file": "viplite-tina/lib/aarch64-none-linux-gnu/v2.0/debug/BW/libNBGlinker.so",
+      "bytes": 178904,
+      "sha256": "a4b786f4b215c06545b07833716a633c2cec0c20d173fc96a46d8f6580c9927c",
+      "git_blob": "64ffa80daadc96d77dbd8995997394624df7590c",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/viplite-tina/lib/aarch64-none-linux-gnu/v2.0/debug/BW/libNBGlinker.so"
+    },
+    {
+      "file": "viplite-tina/lib/aarch64-none-linux-gnu/v2.0/debug/BW/libVIPhal.so",
+      "bytes": 39416,
+      "sha256": "3ed5357b26bd6c4fb68fbdc0b21d637227dda711d1fe67b9e28accdc48bb11f2",
+      "git_blob": "a3803701b3e349d5192e7d1ce7e9ecc3c49acc66",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/viplite-tina/lib/aarch64-none-linux-gnu/v2.0/debug/BW/libVIPhal.so"
+    },
+    {
+      "file": "viplite-tina/lib/aarch64-none-linux-gnu/v2.0/debug/CNN_BW/libNBGlinker.so",
+      "bytes": 178888,
+      "sha256": "556be32b5df73d15491ae8bb75bd51ddf471d923de91ce6de72dff1add9efd4d",
+      "git_blob": "aa773da6e1ca82bce39656e55058d9cb9b4fea13",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/viplite-tina/lib/aarch64-none-linux-gnu/v2.0/debug/CNN_BW/libNBGlinker.so"
+    },
+    {
+      "file": "viplite-tina/lib/aarch64-none-linux-gnu/v2.0/debug/CNN_BW/libVIPhal.so",
+      "bytes": 39416,
+      "sha256": "d3b13de5d01bb440ab33ec1a2131c21d112d5b4880165b751eba5ca14dec0682",
+      "git_blob": "e8091560678472e8371c981226fba599ade240b4",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/viplite-tina/lib/aarch64-none-linux-gnu/v2.0/debug/CNN_BW/libVIPhal.so"
+    },
+    {
+      "file": "viplite-tina/lib/aarch64-none-linux-gnu/v2.0/debug/DEBUG/libNBGlinker.so",
+      "bytes": 196824,
+      "sha256": "6fb18b3fb38696d7ccf217dd10b9af3e29488d12a01196a4522ccf6d4ba175b5",
+      "git_blob": "1157f9adc5bf0017e151d65a5aba98f7388788ca",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/viplite-tina/lib/aarch64-none-linux-gnu/v2.0/debug/DEBUG/libNBGlinker.so"
+    },
+    {
+      "file": "viplite-tina/lib/aarch64-none-linux-gnu/v2.0/debug/DEBUG/libVIPhal.so",
+      "bytes": 43536,
+      "sha256": "23e4ba594534f9a314a3c57c855aa8f7c83eaebd0b3381bd4099bccbc5872f16",
+      "git_blob": "2aacc87bb0b5989b42519adb04bb3160dcc8af65",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/viplite-tina/lib/aarch64-none-linux-gnu/v2.0/debug/DEBUG/libVIPhal.so"
+    },
+    {
+      "file": "viplite-tina/lib/aarch64-none-linux-gnu/v2.0/inc/vip_lite.h",
+      "bytes": 44351,
+      "sha256": "33fee8f985210cb34f14b7e2b0614096e6972718f87d8107497521d561d9df41",
+      "git_blob": "fced603bdc7759a74c5ffd5953bf272e255ee5b3",
+      "matches_orange_pi_file": true,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/viplite-tina/lib/aarch64-none-linux-gnu/v2.0/inc/vip_lite.h"
+    },
+    {
+      "file": "viplite-tina/lib/aarch64-none-linux-gnu/v2.0/inc/vip_lite_common.h",
+      "bytes": 8117,
+      "sha256": "d807216e8376de4729de074ecb1b91cd5ccab279ef18543acd3adb61b1a1518e",
+      "git_blob": "49d03a907193863af0429b6ef5cebb4961412a65",
+      "matches_orange_pi_file": true,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/viplite-tina/lib/aarch64-none-linux-gnu/v2.0/inc/vip_lite_common.h"
+    },
+    {
+      "file": "viplite-tina/lib/aarch64-none-linux-gnu/v2.0/libNBGlinker.so",
+      "bytes": 174728,
+      "sha256": "82f049b0ed0065dd4d443e37eeb1edfcbef24457c9c24e36170d64d5b748ca66",
+      "git_blob": "7b0907c8e61d45bc10e33f2365e8a58a6a503379",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/viplite-tina/lib/aarch64-none-linux-gnu/v2.0/libNBGlinker.so"
+    },
+    {
+      "file": "viplite-tina/lib/aarch64-none-linux-gnu/v2.0/libVIPhal.so",
+      "bytes": 39416,
+      "sha256": "3ed5357b26bd6c4fb68fbdc0b21d637227dda711d1fe67b9e28accdc48bb11f2",
+      "git_blob": "a3803701b3e349d5192e7d1ce7e9ecc3c49acc66",
+      "matches_orange_pi_file": false,
+      "original_source": "https://raw.githubusercontent.com/ZIFENG278/ai-sdk/fc90006d0f6569da2f6726c2d8395877686f5aca/viplite-tina/lib/aarch64-none-linux-gnu/v2.0/libVIPhal.so"
+    }
+  ],
+  "scope": "Small relevant files and licence/readme materials only; not a full SDK download or grant determination"
+}
