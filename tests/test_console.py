@@ -39,6 +39,25 @@ class ConsoleTests(unittest.TestCase):
             def fingerprint(inner):return json.dumps(inner.accounts.passwords,sort_keys=True)
         self.admin=IsolatedAdmin(self.accounts,state=Path(self.temp.name),persist=lambda:{'success':True,'sd_unmounted':True},first_marker=Path(self.temp.name)/'selected/first-login-completed')
     def call(self,op,user='operator',**kwargs):return self.admin.call({'op':op,'user':user,'password':'initial',**kwargs})
+    def test_first_visit_click_and_save_timestamp(self):
+        path=Path(self.temp.name)/'first-login.json'
+        path.write_text(json.dumps({'user':'operator','expires_boot_s':0,'token_sha256':'expired'}))
+        original=Path.read_text
+        def read(target,*args,**kwargs):
+            if str(target)=='/etc/airlunix/selected/web/config.json':return '{"bind":"127.0.0.1"}'
+            return original(target,*args,**kwargs)
+        self.assertTrue(self.call('first_login_status')['available'])
+        with patch.object(Path,'read_text',read):first=self.call('bootstrap_click')
+        self.assertTrue(first['first_login'])
+        self.assertFalse(self.call('first_login_status')['available'])
+        self.admin.call({'op':'first_password','user':'operator','setup_grant':first['setup_grant'],'new_password':'chosen'})
+        self.assertTrue(self.admin.first_marker.exists())
+        with patch.object(Path,'read_text',read):
+            with self.assertRaises(Denied):self.call('bootstrap_click')
+        saved=self.call('save',password='chosen')
+        self.assertGreater(saved['last_successful_save']['unix_s'],0)
+        self.assertEqual(saved['last_successful_save'],self.call('save_status',password='chosen')['last_successful_save'])
+
     def test_password_reauthentication_and_normal_user_boundary(self):
         with self.assertRaises(Denied):self.call('password',password='wrong',new_password='changed')
         with self.assertRaises(Denied):self.call('create_user',user='reader',name='third',new_password='changed')
