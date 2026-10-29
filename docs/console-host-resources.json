@@ -1,0 +1,24 @@
+{
+  "environment": "x86_64 build host; HTTPS fixture with real privacy-filtered host telemetry; no privileged production helper",
+  "idle": {
+    "duration_s": 10.011,
+    "process_cpu_percent_one_core": 0.0,
+    "rss_before_bytes": 29024256,
+    "peak_sampled_rss_bytes": 29024256,
+    "rss_after_bytes": 29024256,
+    "process_write_bytes_delta": 0,
+    "requests": 0,
+    "distinct_shared_samples": 0
+  },
+  "five_concurrent_clients": {
+    "duration_s": 10.392,
+    "process_cpu_percent_one_core": 1.732,
+    "rss_before_bytes": 29024256,
+    "peak_sampled_rss_bytes": 29413376,
+    "rss_after_bytes": 29253632,
+    "process_write_bytes_delta": 0,
+    "requests": 100,
+    "distinct_shared_samples": 5
+  },
+  "physical_board_measurement": false
+}

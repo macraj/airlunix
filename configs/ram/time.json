@@ -1,0 +1,6 @@
+{
+  "timeout_s": 90,
+  "success_interval_s": 86400,
+  "retry_s": [60, 300, 900, 3600, 21600],
+  "network_event_min_interval_s": 60
+}

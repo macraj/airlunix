@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""Small xxd -i compatibility helper for this pinned U-Boot build."""
+
+from pathlib import Path
+import re
+import sys
+
+
+def main() -> int:
+    args = sys.argv[1:]
+    columns = 16
+    source = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "-c" and index + 1 < len(args):
+            columns = int(args[index + 1])
+            index += 2
+        elif arg == "-i":
+            index += 1
+        elif arg.startswith("-"):
+            raise SystemExit(f"unsupported xxd option: {arg}")
+        else:
+            source = Path(arg)
+            index += 1
+
+    if source is None or columns < 1:
+        raise SystemExit("usage: xxd -c columns -i input")
+
+    data = source.read_bytes()
+    name = re.sub(r"[^A-Za-z0-9_]", "_", source.name)
+    if not name or name[0].isdigit():
+        name = "_" + name
+
+    print(f"unsigned char {name}[] = {{")
+    for start in range(0, len(data), columns):
+        chunk = data[start:start + columns]
+        text = ", ".join(f"0x{byte:02x}" for byte in chunk)
+        suffix = "," if start + columns < len(data) else ""
+        print(f"  {text}{suffix}")
+    if not data:
+        print("  0x00")
+    print("};")
+    print(f"unsigned int {name}_len = {len(data)};")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,20 @@
+#!/sbin/openrc-run
+description="Airlunix Web Console (unprivileged HTTPS, explicit setup required)"
+command="/usr/bin/python3"
+command_args="-m airlunix.web"
+command_user="airweb:airweb"
+command_background=true
+pidfile="/run/airlunix-web.pid"
+output_log="/run/airlunix-web.log"
+error_log="/run/airlunix-web.err"
+depend() { need airlunix-admin; after nftables; }
+start_pre() {
+    [ -f /etc/airlunix/selected/web/config.json ] || {
+        eerror "Not provisioned. Use authenticated SSH: doas airlunix-web-setup"
+        return 1
+    }
+}
+start() {
+    [ -f /etc/airlunix/selected/web/config.json ] || return 0
+    default_start
+}

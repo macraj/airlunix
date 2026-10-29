@@ -1,0 +1,117 @@
+#!/usr/bin/python3
+"""Explicit selected persistence. SD is mounted only while this command runs."""
+import io
+import os
+from pathlib import Path, PurePosixPath
+import subprocess
+import sys
+import tarfile
+import fcntl
+import json
+import time
+
+IDENTITY = {'etc/passwd', 'etc/shadow', 'etc/group', 'etc/hostname',
+            'etc/airlunix-provisioned', 'etc/ssh/ssh_host_ed25519_key',
+            'etc/ssh/ssh_host_ed25519_key.pub'}
+
+def allowed(name):
+    p = PurePosixPath(name)
+    if p.is_absolute() or '..' in p.parts or str(p) != name:
+        return False
+    return (name in IDENTITY or
+            (len(p.parts) == 4 and p.parts[0] == 'home' and
+             p.parts[2:] == ('.ssh', 'authorized_keys')) or
+            name.startswith('etc/airlunix/selected/') or
+            name.startswith('var/lib/airlunix/selected/'))
+
+def restore(archive):
+    if not archive.exists():
+        return
+    with tarfile.open(archive, 'r:gz') as tar:
+        members = tar.getmembers()
+        if sum(m.size for m in members) > 64 * 1024 * 1024:
+            raise ValueError('State exceeds 64 MiB limit')
+        for m in members:
+            if not allowed(m.name) or not m.isfile() or m.mode & 0o7000:
+                raise ValueError('Unapproved state entry: ' + m.name)
+            dest = Path('/') / m.name
+            for parent in [dest, *dest.parents]:
+                if parent.is_symlink():
+                    raise ValueError('Symlink in restore destination')
+        for m in members:
+            dest = Path('/') / m.name
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            data = tar.extractfile(m).read()
+            fd = os.open(dest, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW, 0o600)
+            with os.fdopen(fd, 'wb') as f:
+                f.write(data)
+                os.fchown(f.fileno(), m.uid, m.gid)
+                os.fchmod(f.fileno(), m.mode & 0o777)
+        # SSH StrictModes also checks parent ownership and permissions.
+        import pwd
+        for user in pwd.getpwall():
+            if user.pw_dir.startswith('/home/'):
+                home = Path(user.pw_dir)
+                if home.exists():
+                    os.chown(home, user.pw_uid, user.pw_gid)
+                    home.chmod(0o750)
+                    ssh = home / '.ssh'
+                    if ssh.exists():
+                        os.chown(ssh, user.pw_uid, user.pw_gid)
+                        ssh.chmod(0o700)
+
+def save():
+    Path('/run/airlunix').mkdir(parents=True, exist_ok=True)
+    lock = open('/run/airlunix/storage.lock', 'a')
+    try:fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:raise ValueError('Another save or storage operation is running')
+    names = sorted(IDENTITY)
+    names += [str(p).lstrip('/') for p in Path('/home').glob('*/.ssh/authorized_keys')]
+    for root in ('/etc/airlunix/selected', '/var/lib/airlunix/selected'):
+        names += [str(p).lstrip('/') for p in Path(root).rglob('*') if p.is_file()]
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode='w:gz') as tar:
+        for name in sorted(set(names)):
+            p = Path('/') / name
+            if not p.exists():
+                continue
+            if not allowed(name) or p.is_symlink() or not p.is_file():
+                raise ValueError('Unsupported selected path: ' + name)
+            if any(q.is_symlink() for q in p.parents):
+                raise ValueError('Symlink in selected path')
+            info = tar.gettarinfo(p, arcname=name)
+            info.mode &= 0o777
+            with p.open('rb') as f:
+                tar.addfile(info, f)
+    if buf.tell() > 64 * 1024 * 1024:
+        raise ValueError('State archive exceeds 64 MiB limit')
+    device = Path('/run/airlunix-state-device').read_text().strip()
+    if not device.startswith('/dev/mmcblk') or '/' in device[5:]:
+        raise ValueError('Invalid state device')
+    subprocess.run(['mount', '-t', 'ext4', '-o', 'rw,noatime', device, '/state'], check=True)
+    try:
+        if not Path('/state/airlunix-media').is_file():
+            raise ValueError('Not Airlunix media')
+        target = Path('/state/selected.tar.gz')
+        fd = os.open('/state/selected.tar.gz.new', os.O_WRONLY | os.O_CREAT |
+                     os.O_TRUNC | os.O_NOFOLLOW, 0o600)
+        with os.fdopen(fd, 'wb') as f:
+            f.write(buf.getvalue())
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace('/state/selected.tar.gz.new', target)
+        os.sync()
+    finally:
+        subprocess.run(['umount', '/state'], check=True)
+    Path('/run/airlunix/last-save.json').write_text(json.dumps({'unix_s':time.time(),'boot_s':time.monotonic()}))
+    print('Selected state saved; storage unmounted. No shutdown save is configured.')
+
+if __name__ == '__main__':
+    if os.geteuid() != 0:
+        sys.exit('Root authentication is required')
+    if sys.argv[1:] == ['save']:
+        save()
+    elif len(sys.argv) == 3 and sys.argv[1] == 'restore':
+        restore(Path(sys.argv[2]))
+    else:
+        sys.exit('Usage: airlunix-state save')

@@ -1,0 +1,10 @@
+#!/bin/sh
+case "${1:-tty2}" in
+    tty2) terminal=tty2; speed=38400 ;;
+    ttyS7) terminal=ttyS7; speed=115200 ;;
+    *) exit 1 ;;
+esac
+if [ ! -e /etc/airlunix-provisioned ]; then
+    /usr/bin/python3 /usr/sbin/airlunix-provision
+fi
+exec /sbin/getty -L "$speed" "$terminal"

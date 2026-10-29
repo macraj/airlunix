@@ -1,0 +1,22 @@
+#!/bin/sh
+# Fixed program on tty1. No shell prompt, credentials or administrator session.
+exec </dev/null >/dev/tty1 2>/dev/null
+while :; do
+    printf '\033[2J\033[H'
+    cat /etc/airlunix-release
+    printf '\nRAM residency: '
+    if [ -f /run/airlunix-residency ] && ! awk '$3 ~ /ext[234]|vfat|squashfs/ {found=1} END {exit !found}' /proc/mounts; then
+        printf 'complete runtime in RAM; storage unmounted\n'
+    else printf 'NOT VERIFIED — inspect mounts\n'; fi
+    printf '\nNetwork addresses:\n'
+    ip -o addr show scope global
+    printf '\nWeb Console: '
+    if [ -f /etc/airlunix/selected/web/config.json ]; then
+        rc-service airlunix-web status
+        printf 'HTTPS reachability requires an independent client check\n'
+    else printf 'not provisioned; use authenticated SSH setup\n'; fi
+    printf '\nNTP status: '
+    /usr/sbin/airlunix-time summary
+    printf '\nAuthenticated login: switch to tty2\n'
+    sleep 5
+done

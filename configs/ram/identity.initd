@@ -1,0 +1,8 @@
+#!/sbin/openrc-run
+description="Prepare device SSH identity in RAM"
+depend() { before sshd; after nftables; }
+start() {
+    # New unprovisioned keys are volatile until an explicit provisioning save.
+    ssh-keygen -A
+    mkdir -p /run/sshd
+}

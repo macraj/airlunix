@@ -1,0 +1,7 @@
+diff --git a/Makefile b/Makefile
+index 9d4f86a..94af1d2 100755
+--- a/Makefile
++++ b/Makefile
+@@ -1072 +1072 @@ endif
+-	$(DTC) $(DTS_WARNNING_SKIP) -I dtb -O dts  $(DTS_PATH)/$(CONFIG_DEFAULT_DEVICE_TREE).dtb > u-boot-dtb.dts
++	$(DTC) $(DTS_WARNNING_SKIP) -I dtb -O dts  $(objtree)/arch/$(ARCH)/dts/$(CONFIG_DEFAULT_DEVICE_TREE).dtb > u-boot-dtb.dts

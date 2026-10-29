@@ -1,0 +1,10 @@
+{
+  "name": "Airlunix",
+  "id": "airlunix",
+  "version": "0.3.0",
+  "profile": "Headless Server",
+  "python_apk": "3.14.10-r1",
+  "image_bytes": 805306368,
+  "source_date_epoch": 1793232000,
+  "tagline": "Runs in RAM. Persists by choice."
+}

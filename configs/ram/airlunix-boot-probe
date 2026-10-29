@@ -1,0 +1,67 @@
+#!/usr/bin/python3
+"""Finite kernel-relative readiness probe. All output is RAM-only."""
+import json
+from pathlib import Path
+import socket
+import subprocess
+import time
+
+cfg = json.loads(Path('/etc/airlunix/boot-measure.json').read_text())
+clock = lambda: time.clock_gettime(time.CLOCK_BOOTTIME)
+data = {'origin': 'kernel CLOCK_BOOTTIME (excludes bootloader)',
+        'probe_started_boot_s': clock(), 'interface': cfg['interface'],
+        'poll_interval_s': cfg['poll_interval_s'], 'milestones_s': {}}
+data['application'] = 'readiness unknown/not measured; no application is required by the base distribution'
+dest = Path('/run/airlunix-boot.json')
+
+def run(args):
+    try:
+        return subprocess.run(args, capture_output=True, text=True, timeout=2)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+
+def stamp(name):
+    data['milestones_s'].setdefault(name, round(clock(), 3))
+
+while clock() - data['probe_started_boot_s'] < cfg['max_duration_s']:
+    marks = data['milestones_s']
+    try:
+        if Path('/sys/class/net', cfg['interface'], 'carrier').read_text().strip() == '1':
+            stamp('link_ready')
+    except (FileNotFoundError, OSError):
+        pass
+    if 'ip_and_route_ready' not in marks:
+        address = run(['ip', '-4', '-o', 'addr', 'show', 'dev', cfg['interface'], 'scope', 'global'])
+        route = run(['ip', '-4', 'route', 'show', 'default', 'dev', cfg['interface']])
+        if address and address.returncode == 0 and address.stdout.strip() and route and route.stdout.strip():
+            stamp('ip_and_route_ready')
+            data['address'] = address.stdout.strip()
+            data['route'] = route.stdout.strip()
+            fields = route.stdout.split()
+            data['lan_endpoint'] = cfg['lan_endpoint'] or (fields[fields.index('via') + 1] if 'via' in fields else None)
+    if 'ip_and_route_ready' in marks and 'lan_probe_success' not in marks and data.get('lan_endpoint'):
+        result = run(['ping', '-c', '1', '-W', '1', data['lan_endpoint']])
+        if result and result.returncode == 0:
+            stamp('lan_probe_success')
+            data['lan_probe'] = 'ICMP reply from LAN endpoint; no DNS/Internet required'
+    if 'ssh_local_banner' not in marks:
+        try:
+            with socket.create_connection(('127.0.0.1', 22), timeout=0.2) as sock:
+                if sock.recv(128).startswith(b'SSH-'):
+                    stamp('ssh_local_banner')
+        except OSError:
+            pass
+    check = cfg.get('application_ready_command')
+    if check and 'application_ready' not in marks:
+        result = run(check)
+        if result and result.returncode == 0:
+            stamp('application_ready')
+            data['application'] = 'readiness check succeeded'
+    tmp = dest.with_suffix('.new')
+    tmp.write_text(json.dumps(data, sort_keys=True) + '\n')
+    tmp.replace(dest)
+    if all(x in marks for x in ('link_ready', 'ip_and_route_ready', 'lan_probe_success', 'ssh_local_banner')) and (not check or 'application_ready' in marks):
+        break
+    time.sleep(cfg['poll_interval_s'])
+data['probe_finished_boot_s'] = clock()
+dest.write_text(json.dumps(data, sort_keys=True) + '\n')

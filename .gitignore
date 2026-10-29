@@ -1,0 +1,10 @@
+/build/
+/downloads/
+/output/
+*.img
+*.img.xz
+*.tar.gz
+__pycache__/
+*.pyc
+.env
+*.secret

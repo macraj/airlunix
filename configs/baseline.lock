@@ -1,0 +1,6 @@
+# Pinned board-support inputs; update only with an explicit baseline review.
+# Format: name  repository  ref  commit
+orangepi-build https://github.com/orangepi-xunlong/orangepi-build.git next a95129bf30ea11886cc35f08ebb3e69695a26656
+linux-orangepi https://github.com/orangepi-xunlong/linux-orangepi.git orange-pi-6.6-sun60iw2 2ac08e8c7cdc28abbdc5c9a9dd812f887ae9c79f
+u-boot-orangepi https://github.com/orangepi-xunlong/u-boot-orangepi.git v2018.05-sun60iw2 b791be842935b27268ae3d00e943a9075495f30a
+sun60iw2_packages https://gitee.com/orangepi-xunlong/sun60iw2_packages.git sun60iw2_packages 28961f4804cf8c2826b4e560c76bd5239658e90b

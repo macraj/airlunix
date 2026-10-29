@@ -1,0 +1,9 @@
+#!/sbin/openrc-run
+description="Airlunix narrowly scoped local administration helper"
+command="/usr/bin/python3"
+command_args="-m airlunix.admin"
+command_background=true
+pidfile="/run/airlunix-admin.pid"
+output_log="/run/airlunix-admin.log"
+error_log="/run/airlunix-admin.err"
+depend() { after localmount; }

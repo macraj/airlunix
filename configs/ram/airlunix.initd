@@ -1,0 +1,12 @@
+#!/sbin/openrc-run
+description="Airlunix application (install application separately)"
+command="/opt/airlunix/venv/bin/python"
+command_args="-m airlunix"
+command_user="airlunix:airlunix"
+directory="/var/lib/airlunix"
+supervisor="supervise-daemon"
+depend() { need net; after nftables; }
+start_pre() {
+    [ -x "$command" ] || { eerror "Airlunix application not installed"; return 1; }
+    checkpath -d -o airlunix:airlunix -m 0700 /var/lib/airlunix
+}

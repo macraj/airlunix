@@ -1,0 +1,147 @@
+{
+  "source": "https://gitee.com/orangepi-xunlong/sun60iw2_packages.git",
+  "revision": "28961f4804cf8c2826b4e560c76bd5239658e90b",
+  "files": [
+    {
+      "file": "npu/opt/pvrsrvkm.ko",
+      "bytes": 31046968,
+      "sha256": "0d4eb8582c56ddbe285da20a4fac1bca475bb3564cbe6a067e4b27e3f891bee1",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/opt/vpm_run/input_0.dat",
+      "bytes": 150528,
+      "sha256": "d38c22c2007db314572c9ddfeb513a9f3d11ec99e8deec0f65bc91481502f1b9",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/opt/vpm_run/network_binary.nb",
+      "bytes": 964224,
+      "sha256": "fc0d50bdc863e4dfc74eef6dad9d34655c560e759a2f426979a01c505fa9b95f",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/opt/vpm_run/readme.txt",
+      "bytes": 678,
+      "sha256": "c4b04f4bb8627f89b46fcaf80ed595ea6964f523ebd5bd096a7d04825486aea4",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/opt/vpm_run/sample.txt",
+      "bytes": 53,
+      "sha256": "d4b17023e90a99561735240e5ba4de8090d51f99e5d6b7dd68b9336afb490017",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/opt/vpm_run/vpm_run",
+      "bytes": 38696,
+      "sha256": "dbcea3266070d51a4e0b3aac19540814d065f3727a6045ee96e25f9464371407",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/opt/yolov5/input_data/dog.jpg",
+      "bytes": 163759,
+      "sha256": "5a9522051c3cec2bbd2f6323fccba32e8fbf3ddcc2b3e2fd46b04c720bc6f866",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/opt/yolov5/input_data/dog_640_640.jpg",
+      "bytes": 82629,
+      "sha256": "fba41bc42f4ca94e1a33f0c18ef914fc30056c05dda8c4f6d265c375c5ad780d",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/opt/yolov5/model/yolov5.nb",
+      "bytes": 5033536,
+      "sha256": "6c6cb261f41fcc774134b90d0e1f2a17675cd6da1e8f1c6d2b61460cfd584158",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/opt/yolov5/result.png",
+      "bytes": 717276,
+      "sha256": "4148e35804c045f0957f46ff662dab952392d88285cb734b6e0539e14af293bb",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/opt/yolov5/yolov5",
+      "bytes": 112320,
+      "sha256": "5cdd267764dc351b0e28dd82e6e040934129967e5d192da813b2b155564ef2f1",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/usr/include/vip_lite.h",
+      "bytes": 44351,
+      "sha256": "33fee8f985210cb34f14b7e2b0614096e6972718f87d8107497521d561d9df41",
+      "terms": "restrictive header notice",
+      "evidence": "File lines 2\u20138 require express written permission"
+    },
+    {
+      "file": "npu/usr/include/vip_lite_common.h",
+      "bytes": 8117,
+      "sha256": "d807216e8376de4729de074ecb1b91cd5ccab279ef18543acd3adb61b1a1518e",
+      "terms": "MIT OR GPL-2.0-or-later",
+      "evidence": "File lines 3\u201351"
+    },
+    {
+      "file": "npu/usr/lib/libNBGlinker.so",
+      "bytes": 174560,
+      "sha256": "de93bb4a7d86af67bc4ca597d12228b9b21b062601b18f33ca30393a2af4a842",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/usr/lib/libVIPhal.so",
+      "bytes": 39248,
+      "sha256": "648444a26a1aeaec0182c0ba348b7a453134b8ccdf8282a211ce4c0f5e5e51a0",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/usr/lib/libjpeg.so.8",
+      "bytes": 280360,
+      "sha256": "a90badbd40d14aa5c4241cc82583d4d467491a7711ed2bd316886ee3d9b88445",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/usr/lib/libopencv_core.so.407",
+      "bytes": 1863160,
+      "sha256": "89641cd004221797c3f02cc8fd8f31189de7fedfb518db2c2c99dc9d7ec8e375",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/usr/lib/libopencv_imgcodecs.so.407",
+      "bytes": 173880,
+      "sha256": "639ac5aebea7e79df6e076d06419b7eedd39edfd3a74df73b6f89f5f53e664f0",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/usr/lib/libopencv_imgproc.so.407",
+      "bytes": 2166408,
+      "sha256": "686a8558599ca301bc669a2e3ffccfd50035cd3bacf0fe85b22d20d137adb7b6",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    },
+    {
+      "file": "npu/usr/lib/libpng16.so.16",
+      "bytes": 186064,
+      "sha256": "1fdbe3d041ca38e6169233e9b7c0244851eaecd4581b57403bec29ad9d9f3bc2",
+      "terms": "redistribution rights unverified",
+      "evidence": "No applicable file-specific grant located in the inspected bundle"
+    }
+  ],
+  "scope": "Vendor-tree inventory; inclusion in a release must be recorded separately"
+}

@@ -1,0 +1,7 @@
+{
+  "interface": "eth0",
+  "lan_endpoint": null,
+  "poll_interval_s": 0.25,
+  "max_duration_s": 180,
+  "application_ready_command": null
+}

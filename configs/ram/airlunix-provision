@@ -1,0 +1,45 @@
+#!/usr/bin/python3
+"""Local physical-console provisioning; never an unauthenticated shell."""
+import getpass
+import fcntl
+import os
+from pathlib import Path
+import re
+import subprocess
+
+if os.geteuid() != 0 or Path('/etc/airlunix-provisioned').exists():
+    raise SystemExit('Already provisioned or not root')
+lock=Path('/run/airlunix-provision.lock').open('a')
+try: fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+except BlockingIOError: raise SystemExit('Provisioning is active on another console')
+print('Airlunix device provisioning. Requires physical console access.')
+name = input('New administrator name: ').strip()
+if not re.fullmatch('[a-z][a-z0-9_]{0,30}', name) or name in ('root', 'airlunix'):
+    raise SystemExit('Invalid administrator name')
+key = input('Administrator SSH public key: ').strip()
+if not key.startswith(('ssh-ed25519 ', 'sk-ssh-ed25519@openssh.com ')) or '\n' in key:
+    raise SystemExit('An Ed25519 public key is required')
+password = getpass.getpass('New local console / doas password (12+ characters): ')
+if len(password) < 12 or getpass.getpass('Repeat password: ') != password:
+    raise SystemExit('Password length or confirmation failed')
+Path('/run/provision-key.pub').write_text(key + '\n')
+subprocess.run(['ssh-keygen', '-l', '-f', '/run/provision-key.pub'], check=True,
+               stdout=subprocess.DEVNULL)
+subprocess.run(['adduser', '-D', '-G', 'wheel', '-s', '/bin/ash', name], check=True)
+subprocess.run(['chpasswd'], input=f'{name}:{password}\n', text=True, check=True)
+del password
+import pwd
+user = pwd.getpwnam(name)
+ssh = Path(user.pw_dir) / '.ssh'
+ssh.mkdir(mode=0o700)
+os.chown(ssh, user.pw_uid, user.pw_gid)
+auth = ssh / 'authorized_keys'
+auth.write_text(key + '\n')
+auth.chmod(0o600)
+os.chown(auth, user.pw_uid, user.pw_gid)
+Path('/etc/airlunix-provisioned').write_text('explicit physical-console provisioning\n')
+subprocess.run(['ssh-keygen', '-A'], check=True)
+if input('Type SAVE to persist this device identity and administrator: ') != 'SAVE':
+    raise SystemExit('Not saved; provisioning will disappear at reboot')
+subprocess.run(['/usr/sbin/airlunix-state', 'save'], check=True)
+print('Provisioned. Credentials are not displayed on the status console.')

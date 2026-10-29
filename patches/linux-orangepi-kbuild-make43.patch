@@ -1,0 +1,7 @@
+diff --git a/Makefile b/Makefile
+index 0e50627d3..4a43bc297 100644
+--- a/Makefile
++++ b/Makefile
+@@ -798 +798 @@ $(KCONFIG_CONFIG):
+-%/config/auto.conf %/config/auto.conf.cmd %/generated/autoconf.h %/generated/rustc_cfg: $(KCONFIG_CONFIG)
++%/config/auto.conf %/config/auto.conf.cmd %/generated/autoconf.h %/generated/rustc_cfg &: $(KCONFIG_CONFIG)
