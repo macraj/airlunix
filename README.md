@@ -12,6 +12,11 @@ stability claim. Binary publication is held pending component redistribution
 verification and release approval. No trademark registration or clearance is
 claimed.
 
+The requested image release is separate from the source preview. The existing
+candidate has been delivered privately and verified on a 2 GB SD card; physical
+board boot remains pending. See the [exact image publication dependencies and
+completed source-material work](docs/image-publication-blockers.md).
+
 ## Runtime architecture
 
 U-Boot loads the kernel and a complete compressed initramfs. The kernel unpacks
