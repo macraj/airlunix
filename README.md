@@ -68,6 +68,14 @@ a new primary ext4 volume in suitable free space is supported. There is no
 shrink, delete, move or format-existing-volume API. See
 [storage policy](docs/storage.md).
 
+The Storage page can also prepare a replacement microSD while the system keeps
+running from RAM. It accepts only the official `macraj/airlunix` GitHub Release
+manifest for Orange Pi 4 Pro/A733, downloads the `.img.xz` directly on the
+device, decompresses with bounded memory, verifies the compressed and raw
+SHA-256 plus a full media readback, and then saves current selected state. It
+requires fresh administrator authentication and exact physical-card confirmation.
+No browser upload or arbitrary URL is accepted.
+
 ## Included capabilities and limits
 
 - Ethernet DHCP, OpenSSH and nftables with default-deny inbound policy except

@@ -17,6 +17,7 @@ import subprocess
 import threading
 import time
 from .storage import Media, StorageError, storage_lock
+from .update import UpdateError, boot_identity, release_manifest, replacement_candidates, stream_image
 from .process import run as bounded_run
 from .logging_ram import emit, install_output, Collector
 
@@ -70,7 +71,7 @@ CRYPT_LOCK=threading.Lock()
 def valid_name(name): return isinstance(name,str) and re.fullmatch(r'[a-z][a-z0-9_-]{0,30}',name) is not None
 
 class Admin:
-    def __init__(self,accounts=None,media=None,state=Path('/run/airlunix'),persist=None,first_marker=Path('/etc/airlunix/selected/web/first-login-completed')):
+    def __init__(self,accounts=None,media=None,state=Path('/run/airlunix'),persist=None,first_marker=Path('/etc/airlunix/selected/web/first-login-completed'),state_device=Path('/run/airlunix-state-device')):
         self.accounts=accounts or Accounts();self.media=media;self.state=state
         state.mkdir(parents=True,exist_ok=True)
         keypath=state/'fingerprint.key'
@@ -80,6 +81,7 @@ class Admin:
         self.key=keypath.read_bytes();self.plans={};self.audit=collections.deque(maxlen=32);self.log_grants={};self.log_collector=None;self.log_reads={};self.export_lock=threading.Lock()
         self.limits=collections.OrderedDict();self.lock=threading.RLock()
         self.persist=persist or self.save_system
+        self.state_device=state_device
         self.first_marker=first_marker;self.bootstrap_grants={}
         baseline=state/'saved-fingerprint'
         self.baseline=baseline.read_text() if baseline.exists() else self.fingerprint()
@@ -124,14 +126,14 @@ class Admin:
         return {'success':True,'sd_unmounted':True}
 
     def mounted(self):
-        try: device=Path('/run/airlunix-state-device').read_text().strip()
+        try: device=self.state_device.read_text().strip()
         except FileNotFoundError:return False
         return any(line.split()[0]==device for line in Path('/proc/mounts').read_text().splitlines())
 
     def call(self,request):
         op=request.get('op')
         operation=op if isinstance(op,str) and len(op)<40 else 'invalid'
-        sensitive=operation in ('save','password','create_user','storage_preview','storage_apply','first_password','bootstrap_login')
+        sensitive=operation in ('save','password','create_user','storage_preview','storage_apply','storage_replace_preview','storage_replace_apply','first_password','bootstrap_login')
         correlation=secrets.token_hex(8)
         if sensitive:emit('administration',operation+'_start',actor=request.get('user',''),operation=correlation)
         try:
@@ -245,11 +247,11 @@ class Admin:
         if op=='login':
             user=self.authenticate(request.get('user'),request.get('password'))
             self.log(user['name'],'login',True);return user
-        if op not in ('users','save_status','password','create_user','save','storage','storage_preview','storage_apply'):
+        if op not in ('users','save_status','password','create_user','save','storage','storage_preview','storage_apply','storage_replace_status','storage_replace_preview','storage_replace_apply'):
             raise ValueError('Unsupported operation')
         # All mutations require fresh system-password authentication. No bearer
         # token obtained by compromising the unprivileged daemon grants root.
-        if op in ('password','create_user','save','storage_preview','storage_apply'):
+        if op in ('password','create_user','save','storage_preview','storage_apply','storage_replace_preview','storage_replace_apply'):
             user=self.authenticate(request.get('user'),request.get('password'))
             if op!='password' and not user['administrator']:raise Denied('Administrator authentication required')
         else:
@@ -281,7 +283,51 @@ class Admin:
             # boundaries/counters and a boot-time filesystem snapshot are used.
             try:return {**json.loads(Path('/run/airlunix-storage.json').read_text()),'mounted':self.mounted()}
             except FileNotFoundError:return {'available':False,'reason':'Boot-time storage cache unavailable; explicit preview required to inspect media'}
-        media=self.media or Media()
+        if op=='storage_replace_status':
+            if not user['administrator']:raise Denied('Administrator required')
+            boot=boot_identity();candidates=replacement_candidates(boot)
+            return {'available':len(candidates)==1,'candidate_count':len(candidates),
+                    'reason':('Replacement card detected' if len(candidates)==1 else
+                              'Remove the unmounted boot card and insert exactly one replacement microSD' if not candidates else
+                              'More than one replacement target is present'),
+                    'candidate':({k:candidates[0][k] for k in ('device','model','bytes','cid')} if len(candidates)==1 else None)}
+        if op=='storage_replace_preview':
+            boot=boot_identity();candidates=replacement_candidates(boot)
+            if len(candidates)!=1:raise StorageError('Insert exactly one replacement microSD after removing the unmounted boot card')
+            manifest=release_manifest();candidate=candidates[0]
+            if candidate['bytes']<manifest['image']['bytes']:raise StorageError('Replacement card is smaller than the published image')
+            token=secrets.token_urlsafe(24);confirmation='REPLACE-'+candidate['cid'][-8:].upper()
+            with self.lock:
+                self.plans={k:v for k,v in self.plans.items() if time.monotonic()<v['expires']}
+                if len(self.plans)>=16:raise StorageError('Too many pending previews; wait for expiry')
+                self.plans[token]={'kind':'replacement','user':name,'candidate':candidate,'manifest':manifest,
+                                   'confirmation':confirmation,'expires':time.monotonic()+600}
+            return {'token':token,'target':candidate['device'],'identity':candidate['model']+' '+candidate['cid'],
+                    'capacity_bytes':candidate['bytes'],'confirmation':confirmation,'release':manifest,
+                    'warning':'The selected replacement card will be completely overwritten. The running system remains in RAM.'}
+        if op=='storage_replace_apply':
+            with self.lock:record=self.plans.pop(request.get('token'),None)
+            if not record or record.get('kind')!='replacement' or record['user']!=name or time.monotonic()>record['expires']:
+                raise StorageError('Replacement preview expired or was already used')
+            if request.get('confirmation')!=record['confirmation']:raise StorageError('Replacement confirmation does not match')
+            candidate=record['candidate'];current=replacement_candidates(boot_identity())
+            if len(current)!=1 or current[0]['cid']!=candidate['cid'] or current[0]['device']!=candidate['device']:
+                raise StorageError('Replacement media changed since preview')
+            with storage_lock(self.state/'storage.lock'):
+                result=stream_image(Path(candidate['device']),record['manifest'],candidate['cid'])
+                self.state_device.write_text(result['partition']+'\n')
+            # The image is now verified and the shared file lock has been released;
+            # save_system reacquires it while copying the current selected state.
+            saved=self.persist()
+            if not saved.get('success') or not saved.get('sd_unmounted'):
+                raise StorageError('Replacement image is verified, but current configuration was not saved; keep the system powered and retry Save configuration')
+            self.baseline=self.fingerprint();self.last_save={'unix_s':time.time(),'boot_s':time.monotonic()}
+            (self.state/'saved-fingerprint').write_text(self.baseline)
+            (self.state/'last-save.json').write_text(json.dumps(self.last_save))
+            self.log(name,op,True)
+            return {**result,'sd_unmounted':True,'configuration_saved':True,
+                    'last_successful_save':self.last_save,'reboot_ready':True,'durable_immediately':True}
+        media=self.media or Media(state_file=self.state_device)
         if op=='storage_preview':
             with storage_lock(self.state/'storage.lock'):
                 media.check_idle();layout=media.inspect();preview=plan_for(media,layout,request)
@@ -289,11 +335,11 @@ class Admin:
             with self.lock:
                 self.plans={k:v for k,v in self.plans.items() if time.monotonic()<v['expires']}
                 if len(self.plans)>=16:raise StorageError('Too many pending previews; wait for expiry')
-                self.plans[token]={'user':name,'preview':preview,'expires':time.monotonic()+120}
+                self.plans[token]={'kind':'partition','user':name,'preview':preview,'expires':time.monotonic()+120}
             return {'token':token,'target':str(media.disk),'identity':layout['identity'],
                     'confirmation':media.disk.name,'preview':preview,'durable_immediately':True}
         with self.lock:record=self.plans.pop(request.get('token'),None)
-        if not record or record['user']!=name or time.monotonic()>record['expires']:
+        if not record or record.get('kind')!='partition' or record['user']!=name or time.monotonic()>record['expires']:
             raise StorageError('Preview expired or was already used')
         if request.get('confirmation')!=media.disk.name:raise StorageError('Target confirmation does not match')
         with storage_lock(self.state/'storage.lock'):result=media.execute(record['preview'])
@@ -320,7 +366,7 @@ class Handler(socketserver.StreamRequestHandler):
             result={'ok':True,'result':self.server.admin.call(request)}
         except Denied as e:
             emit('security','helper_denied',False);result={'ok':False,'code':403,'error':str(e)}
-        except (ValueError,StorageError) as e:
+        except (ValueError,StorageError,UpdateError) as e:
             emit('helper','rpc_rejected',False,reason=type(e).__name__);result={'ok':False,'code':409,'error':str(e)}
         except Exception as e:
             emit('helper','rpc_failed',False,reason=type(e).__name__);result={'ok':False,'code':500,'error':'Operation failed; inspect via authenticated SSH. Check SD mount state before removal.'}

@@ -38,6 +38,7 @@ class ConsoleTests(unittest.TestCase):
         class IsolatedAdmin(Admin):
             def fingerprint(inner):return json.dumps(inner.accounts.passwords,sort_keys=True)
         self.admin=IsolatedAdmin(self.accounts,state=Path(self.temp.name),persist=lambda:{'success':True,'sd_unmounted':True},first_marker=Path(self.temp.name)/'selected/first-login-completed')
+        self.admin.state_device=Path(self.temp.name)/'state-device'
     def call(self,op,user='operator',**kwargs):return self.admin.call({'op':op,'user':user,'password':'initial',**kwargs})
     def test_first_visit_click_and_save_timestamp(self):
         path=Path(self.temp.name)/'first-login.json'
@@ -123,6 +124,24 @@ class ConsoleTests(unittest.TestCase):
         with self.assertRaises(StorageError):self.call('storage_apply',token=preview['token'],confirmation='fixture')
         preview=self.call('storage_preview',action='expand')
         self.assertTrue(self.call('storage_apply',token=preview['token'],confirmation='fixture')['durable_immediately'])
+
+    def test_replacement_preview_apply_and_configuration_save(self):
+        candidate={'device':str(Path(self.temp.name)/'mmcblk9'),'name':'mmcblk9','cid':'a'*24+'12345678',
+                   'sectors':2000000,'bytes':1024000000,'model':'TEST SD'}
+        manifest={'version':'test-release','image':{'bytes':805306368,'sha256':'b'*64},
+                  'download':{'bytes':100,'sha256':'c'*64,'compression':'xz','url':'https://github.com/macraj/airlunix/releases/download/v/a.img.xz'}}
+        result={'success':True,'partition':candidate['device']+'p1','bytes':805306368,
+                'sha256':'b'*64,'version':'test-release'}
+        with patch('airlunix.admin.boot_identity',return_value={'cid':'d'*32}),\
+             patch('airlunix.admin.replacement_candidates',return_value=[candidate]),\
+             patch('airlunix.admin.release_manifest',return_value=manifest):
+            preview=self.call('storage_replace_preview')
+            self.assertEqual(preview['confirmation'],'REPLACE-12345678')
+            with patch('airlunix.admin.stream_image',return_value=result):
+                applied=self.call('storage_replace_apply',token=preview['token'],confirmation=preview['confirmation'])
+        self.assertTrue(applied['reboot_ready']);self.assertTrue(applied['configuration_saved'])
+        self.assertEqual(self.admin.state_device.read_text().strip(),candidate['device']+'p1')
+        with self.assertRaises(StorageError):self.call('storage_replace_apply',token=preview['token'],confirmation=preview['confirmation'])
     def bootstrap(self,expires=300,user='operator'):
         token=secrets.token_urlsafe(32)
         (Path(self.temp.name)/'first-login.json').write_text(json.dumps({'user':user,'token_sha256':hashlib.sha256(token.encode()).hexdigest(),'expires_boot_s':time.monotonic()+expires}))

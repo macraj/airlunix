@@ -64,5 +64,9 @@ identity after reflashing.
    counters. Reboot once to verify explicit selected-state restoration. If boot
    or access fails, stop and return to the known-good card/image using the reader.
 
-This is an offline recovery/update workflow, not a claimed tested atomic OTA
-update mechanism. Do not update the live validation board during an observation.
+The Web Console replacement-card workflow automates this procedure for an
+already running RAM-resident device. It is still a single-card, non-atomic
+operation: interruption can leave the replacement unbootable, and success is
+reported only after release-hash and full-media readback verification plus an
+explicit selected-state save. Package-level `apk upgrade` remains unsupported;
+packages are pinned and rebuilt into complete versioned images.

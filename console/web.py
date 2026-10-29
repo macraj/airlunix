@@ -27,7 +27,7 @@ class Helper:
     def __init__(self,path='/run/airlunix-admin/control.sock'):self.path=path
     def call(self,request):
         with socket.socket(socket.AF_UNIX) as sock:
-            sock.settimeout(260);sock.connect(self.path)
+            sock.settimeout(1800);sock.connect(self.path)
             sock.sendall(json.dumps(request).encode()+b'\n')
             f=sock.makefile('rb');raw=f.readline(262145)
         if len(raw)>262144:raise APIError(502,'Helper response exceeded limit')
@@ -166,10 +166,12 @@ class Handler(BaseHTTPRequestHandler):
                 if not session['user']['administrator']:raise APIError(403,'Administrator required')
                 return self.send(200,app.helper.call({'op':'log_export','grant':session.get('log_grant',''),'user':user,'password':body.get('password')}))
             op={'/api/password':'password','/api/users':'create_user','/api/save':'save',
-                '/api/storage/preview':'storage_preview','/api/storage/apply':'storage_apply'}.get(path)
+                '/api/storage/preview':'storage_preview','/api/storage/apply':'storage_apply',
+                '/api/storage/replace/preview':'storage_replace_preview',
+                '/api/storage/replace/apply':'storage_replace_apply'}.get(path)
             if not op:raise APIError(404,'Unknown action')
             if not isinstance(body.get('password'),str) or not body['password']:raise APIError(400,'Fresh password authentication required')
-            if op=='storage_preview':
+            if op in ('storage_preview','storage_replace_preview'):
                 if not session['user']['administrator']:raise APIError(403,'Administrative access required')
                 return self.send(200,app.helper.call({**body,'op':op,'user':user}))
             return self.send(202,app.job(session,op,body))
@@ -178,6 +180,7 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/users':return self.send(200,app.helper.call({'op':'users','user':user}))
         if path=='/api/save-status':return self.send(200,app.helper.call({'op':'save_status','user':user}))
         if path=='/api/storage':return self.send(200,app.helper.call({'op':'storage','user':user}))
+        if path=='/api/storage/replace/status':return self.send(200,app.helper.call({'op':'storage_replace_status','user':user}))
         if path=='/api/logs':
             if not session['user']['administrator']:raise APIError(403,'Administrator required')
             from urllib.parse import parse_qs
