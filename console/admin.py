@@ -297,14 +297,21 @@ class Handler(socketserver.StreamRequestHandler):
     def handle(self):
         self.request.settimeout(5)
         _,uid,_=struct.unpack('3i',self.request.getsockopt(socket.SOL_SOCKET,socket.SO_PEERCRED,12))
-        if uid not in (0,self.server.allowed_uid):return
+        if uid not in (0,self.server.allowed_uid):
+            emit('security','helper_peer_denied',False);return
         line=self.rfile.readline(16385)
-        if len(line)>16384:return
+        if len(line)>16384:
+            emit('security','helper_body_limit',False);return
         try:
-            request=json.loads(line);result={'ok':True,'result':self.server.admin.call(request)}
-        except Denied as e:result={'ok':False,'code':403,'error':str(e)}
-        except (ValueError,StorageError) as e:result={'ok':False,'code':409,'error':str(e)}
-        except Exception:result={'ok':False,'code':500,'error':'Operation failed; inspect via authenticated SSH. Check SD mount state before removal.'}
+            request=json.loads(line)
+            if not isinstance(request,dict):raise ValueError('Object required')
+            result={'ok':True,'result':self.server.admin.call(request)}
+        except Denied as e:
+            emit('security','helper_denied',False);result={'ok':False,'code':403,'error':str(e)}
+        except (ValueError,StorageError) as e:
+            emit('helper','rpc_rejected',False,reason=type(e).__name__);result={'ok':False,'code':409,'error':str(e)}
+        except Exception as e:
+            emit('helper','rpc_failed',False,reason=type(e).__name__);result={'ok':False,'code':500,'error':'Operation failed; inspect via authenticated SSH. Check SD mount state before removal.'}
         self.wfile.write(json.dumps(result).encode()+b'\n')
 
 class Server(socketserver.ThreadingMixIn,socketserver.UnixStreamServer):
@@ -313,7 +320,8 @@ class Server(socketserver.ThreadingMixIn,socketserver.UnixStreamServer):
         self.admin=admin;self.allowed_uid=allowed_uid;self.slots=threading.BoundedSemaphore(4)
         super().__init__(path,Handler)
     def process_request(self,request,address):
-        if not self.slots.acquire(False):request.close();return
+        if not self.slots.acquire(False):
+            emit('security','helper_capacity',False);request.close();return
         super().process_request(request,address)
     def process_request_thread(self,request,address):
         try:super().process_request_thread(request,address)

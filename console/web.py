@@ -191,7 +191,9 @@ class Handler(BaseHTTPRequestHandler):
     def handle_api(self,post=False):
         try:self.run_request(post)
         except APIError as e:
-            if e.code>=400:emit('security','http_rejected',False,reason=str(e.code))
+            if e.code>=400:
+                reason=next((label for text,label in [('CSRF','csrf'),('Same-origin','origin'),('management host','host'),('Administrative','role'),('Sign in','session')] if text in e.message),str(e.code))
+                emit('security','http_rejected',False,reason=reason)
             self.send(e.code,{'error':e.message})
         except (BrokenPipeError,ConnectionResetError):pass
         except Exception as exc:
@@ -209,7 +211,8 @@ class Server(socketserver.ThreadingMixIn,HTTPServer):
         if context:request=context.wrap_socket(request,server_side=True,do_handshake_on_connect=False)
         return request,address
     def process_request(self,request,address):
-        if not self.slots.acquire(False):request.close();return
+        if not self.slots.acquire(False):
+            emit('security','http_capacity',False);request.close();return
         super().process_request(request,address)
     def process_request_thread(self,request,address):
         try:super().process_request_thread(request,address)
