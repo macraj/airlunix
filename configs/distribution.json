@@ -1,7 +1,7 @@
 {
   "name": "Airlunix",
   "id": "airlunix",
-  "version": "0.3.1-logging-rc2",
+  "version": "0.3.1-logging-rc3",
   "profile": "Headless Server",
   "python_apk": "3.14.10-r1",
   "image_bytes": 805306368,

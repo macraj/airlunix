@@ -195,6 +195,18 @@ class Admin:
                 emit('administration','diagnostic_export',actor=grant['user'])
                 return {'encoding':'gzip-base64','data':base64.b64encode(data).decode(),'uncompressed_bytes':len(raw)}
             finally:self.export_lock.release()
+        if op=='first_login_status':
+            return {'available':not self.first_marker.exists() and (self.state/'first-login.json').exists()}
+        if op=='bootstrap_click':
+            # First setup is restricted to the SSH-forwarded loopback console.
+            config=json.loads(Path('/etc/airlunix/selected/web/config.json').read_text())
+            if config.get('bind')!='127.0.0.1' or self.first_marker.exists():raise Denied('First setup unavailable')
+            path=self.state/'first-login.json'
+            if not path.exists():raise Denied('First setup unavailable')
+            record=json.loads(path.read_text());token=secrets.token_urlsafe(32)
+            record.update(token_sha256=hashlib.sha256(token.encode()).hexdigest(),expires_boot_s=time.monotonic()+60)
+            path.write_text(json.dumps(record));path.chmod(0o600)
+            return self._call({'op':'bootstrap_login','token':token})
         if op=='bootstrap_login':
             token=request.get('token')
             if not isinstance(token,str) or not 32<=len(token)<=128:raise Denied('First-login link is invalid')
@@ -263,7 +275,7 @@ class Admin:
             self.baseline=self.fingerprint();self.last_save={'unix_s':time.time(),'boot_s':time.monotonic()}
             (self.state/'saved-fingerprint').write_text(self.baseline)
             (self.state/'last-save.json').write_text(json.dumps(self.last_save))
-            self.log(name,op,True);return result
+            self.log(name,op,True);return {**result,'last_successful_save':self.last_save}
         if op=='storage':
             # Monitoring never mounts or rereads the SD. Kernel-maintained
             # boundaries/counters and a boot-time filesystem snapshot are used.

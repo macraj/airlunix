@@ -71,7 +71,7 @@ class Application:
             if len(attempts)>=5:raise APIError(429,'Too many login attempts; retry after five minutes')
             attempts.append(now);self.login_limits[ip]=attempts
             while len(self.login_limits)>256:self.login_limits.popitem(last=False)
-        request=({'op':'bootstrap_login','token':body['bootstrap_token']} if 'bootstrap_token' in body else
+        request=({'op':'bootstrap_click'} if body.get('first_visit') is True and self.config.get('bind')=='127.0.0.1' and ip=='127.0.0.1' else {'op':'bootstrap_login','token':body['bootstrap_token']} if 'bootstrap_token' in body else
                  {'op':'login','user':body.get('user'),'password':body.get('password')})
         try:user=self.helper.call(request)
         except Exception:self.log('login',False);raise APIError(403,'Authentication failed or temporarily throttled')
@@ -139,6 +139,9 @@ class Handler(BaseHTTPRequestHandler):
             if path=='/api/login':
                 token,result=app.login(self.client_address[0],body)
                 return self.send(200,result,cookie='airlunix_session='+token+'; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600')
+        if path=='/api/first-login' and not post:
+            available=app.config.get('bind')=='127.0.0.1' and self.client_address[0]=='127.0.0.1'
+            return self.send(200,app.helper.call({'op':'first_login_status'}) if available else {'available':False})
         if path in ('/','/app.js','/app.css') and not post:
             name={'/':'index.html','/app.js':'app.js','/app.css':'app.css'}[path]
             kinds={'/':'text/html; charset=utf-8','/app.js':'text/javascript; charset=utf-8','/app.css':'text/css; charset=utf-8'}
