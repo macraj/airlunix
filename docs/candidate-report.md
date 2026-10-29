@@ -25,10 +25,11 @@ source/runtime matches, package count and limitations. A
 [77-package CycloneDX inventory](candidate-sbom.cdx.json) is included; it is not
 proof of complete licence/source compliance.
 
-The standalone repository is local only; no remote, push, public repository or
-release exists. Proposed target remains public `macraj/airlunix`, subject to the
-publication gate. Proposed preview tag: `v0.3.0-devpreview`; no tag published.
-The private repository's history has not been mirrored.
+Source publication target: public <https://github.com/macraj/airlunix>.
+Only reviewed source, documentation, screenshots and evidence are included;
+there is no published binary release. Proposed preview tag:
+`v0.3.0-devpreview`; no tag published. The private repository's history has not
+been mirrored.
 
 The build still uses a locked historical rootfs input and prebuilt board
 artifacts. Public clean-bootstrap reconstruction and complete independently
@@ -132,7 +133,7 @@ is prepared and **not sent**.
 | Physical candidate acceptance | Cold/software boots, SSH/provisioning/save restoration, board CPU/RAM/SD I/O and multi-client operation | Test approved spare media or a separately authorized board deployment; do not claim prior binary tests cover it |
 | Physical HDMI / final shutdown tracing / IPv6 firewall | Actual corresponding evidence | Complete hardware/display, shutdown-interval and IPv6 tests in an authorized validation window |
 | Daily time/drift/stability observation | Complete uninterrupted observation | Overnight testing is stopped at owner's request; do not restart or infer a 24-hour result |
-| Public repository and release | Exact-target publication approval after blockers close | Present public `macraj/airlunix` and prerelease contents for the required publication gate; no upload now |
+| Binary release | Rights/source/acceptance blockers above | Source publication is separately authorized; hold image/vendor-binary upload and prerelease until cleared |
 
 Public-facing source/assets and inspected runtime text use Airlunix, with no
 prior application's marketing references or requirement to install it. Upstream

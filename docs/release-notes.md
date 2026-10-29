@@ -3,7 +3,8 @@
 The rebrand retains 0.3.0 because the prepared distribution line is still its
 initial preview. The Airlunix artifact is new: it needs its own build identifier,
 hashes and validation. Earlier binary-specific tests do not automatically certify
-this image. No public repository or release has been created.
+this image. Source publication target: <https://github.com/macraj/airlunix>.
+No binary release has been published.
 
 Implemented in source: full initramfs runtime, explicit selected persistence,
 secure provisioning, one-shot Chrony lifecycle and the local HTTPS Web Console.
