@@ -4,6 +4,7 @@ Emitters never wait for collection. No input path or caller-chosen filename.
 The only retained files are fixed channels on the dedicated logging tmpfs.
 """
 import collections
+import ctypes
 import gzip
 import io
 import json
@@ -41,7 +42,10 @@ def emit(channel, event, success=True, actor='', reason='', operation='', messag
     if channel in ('service','ntp','helper','network') and message:data['message']=sanitize(message)
     try:
         with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM | socket.SOCK_NONBLOCK) as s:
-            s.sendto(json.dumps(data,separators=(',',':')).encode(), str(root/'events.sock'))
+            encoded=json.dumps(data,separators=(',',':')).encode()
+            if len(encoded)>MAX_RECORD:
+                data.pop('message',None);data['truncated']=True;encoded=json.dumps(data,separators=(',',':')).encode()
+            s.sendto(encoded, str(root/'events.sock'))
         _local_drops=0
     except OSError:
         _local_drops=min(_local_drops+1, 2**63-1)
@@ -74,6 +78,19 @@ def install_output(channel):
             emit(channel,'exception_frame',False,reason=tb.tb_frame.f_code.co_name,
                  operation=str(tb.tb_lineno));tb=tb.tb_next
     sys.excepthook=failure
+
+def bound_datagrams(sock):
+    # Unix SOCK_DGRAM SO_RCVBUF does not bound queued payload bytes. Reject
+    # oversized frames in the kernel BEFORE they can occupy the receive queue.
+    # Classic socket BPF uses existing Linux APIs; no eBPF loader/dependency.
+    class Instruction(ctypes.Structure):
+        _fields_=[('code',ctypes.c_ushort),('jt',ctypes.c_ubyte),('jf',ctypes.c_ubyte),('k',ctypes.c_uint)]
+    class Program(ctypes.Structure):
+        _fields_=[('length',ctypes.c_ushort),('instructions',ctypes.POINTER(Instruction))]
+    instructions=(Instruction*4)(Instruction(0x80,0,0,0),Instruction(0x25,1,0,MAX_RECORD),
+                                  Instruction(0x06,0,0,0xffffffff),Instruction(0x06,0,0,0))
+    program=Program(4,instructions)
+    sock.setsockopt(socket.SOL_SOCKET,26,bytes(program))  # SO_ATTACH_FILTER
 
 class Bucket:
     def __init__(self,rate,burst,now):self.rate=rate;self.burst=burst;self.tokens=float(burst);self.at=now
@@ -219,7 +236,7 @@ class Store:
                 try:sizes[c]+=p.stat().st_size
                 except FileNotFoundError:pass
         return {'instance':self.instance,'boot_id':self.boot,'release':self.release,'sequence':self.sequence,
-                'collection_alive':self.worker_alive(),'health_age_s':round(self.clock()-self.last_health_check,3),'counters':dict(self.counts),
+                'collection_alive':self.worker_alive(),'kernel_frame_limit_bytes':MAX_RECORD,'loss_counts_are_lower_bounds':True,'health_age_s':round(self.clock()-self.last_health_check,3),'counters':dict(self.counts),
                 'sizes':sizes,'limits':self.quotas,'low_memory':self.low_memory,'volatile':True}
 
     def health(self):
@@ -246,7 +263,7 @@ class Collector:
         for name,kind in [(str(self.root/'events.sock'),'events'),(str(syslog_path),'syslog')]:
             Path(name).unlink(missing_ok=True)
             s=socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM|socket.SOCK_NONBLOCK)
-            s.setsockopt(socket.SOL_SOCKET,socket.SO_PASSCRED,1);s.bind(name);os.chmod(name,0o666)
+            s.setsockopt(socket.SOL_SOCKET,socket.SO_PASSCRED,1);bound_datagrams(s);s.bind(name);os.chmod(name,0o666)
             self.selector.register(s,selectors.EVENT_READ,kind);self.sockets.append(s)
         if kernel:
             try:
@@ -281,6 +298,7 @@ class Collector:
                 if c not in EVENTS or uid!=0 and c not in ('web','security'):raise ValueError()
                 record={k:clean(r.get(k,''),80) for k in ('event','actor','reason','operation')}
                 if c in ('service','ntp','helper','network') and uid==0 and isinstance(r.get('message'),str):record['message']=sanitize(r['message'])
+                if r.get('truncated') is True:self.store.count('input_truncated');record['truncated']=True
                 record['actor']=safe_actor(r.get('actor'))
                 record['success']=r.get('success') is True
                 record['severity']='info' if record['success'] else 'warning'

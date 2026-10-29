@@ -33,6 +33,15 @@ class LoggingTests(unittest.TestCase):
             started=time.monotonic()
             for _ in range(100):emit('web','test',root=root/'absent')
             self.assertLess(time.monotonic()-started,1)
+    def test_kernel_rejects_oversized_datagrams_before_queueing(self):
+        from airlunix.logging_ram import bound_datagrams
+        with tempfile.TemporaryDirectory(prefix='logtest-') as d:
+            address=str(Path(d)/'socket')
+            with socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM) as receiver, socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM) as sender:
+                bound_datagrams(receiver);receiver.bind(address);receiver.settimeout(.1)
+                for _ in range(20):sender.sendto(b'x'*65536,address)
+                with self.assertRaises(socket.timeout):receiver.recv(2048)
+                sender.sendto(b'valid',address);self.assertEqual(receiver.recv(2048),b'valid')
     def test_invalid_actor_objects_are_not_serialized(self):
         with tempfile.TemporaryDirectory(prefix='logtest-') as d:
             root=Path(d)
