@@ -187,7 +187,7 @@ class Admin:
                     rows=self.log_collector.store.query(channel,limit=32)['records']
                     for row in rows:
                         payload['records'].append({k:v for k,v in row.items() if k in
-                            ('schema','sequence','monotonic_s','boot_s','wall_utc_s','time_confidence','channel','producer','event','success','severity','reason')})
+                            ('schema','sequence','monotonic_s','boot_s','wall_utc_s','time_confidence','channel','producer','event','success','severity','reason','counts','replayed','operation')})
                 raw=json.dumps(payload,separators=(',',':')).encode()
                 if len(raw)>400000:raise ValueError('Export size limit')
                 data=gzip.compress(raw,mtime=0)
