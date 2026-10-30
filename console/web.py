@@ -8,6 +8,7 @@ import http.client
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import socket
 import socketserver
@@ -57,10 +58,11 @@ class Sessions:
         with self.lock:self.values.pop(hashlib.sha256(token.encode()).hexdigest(),None)
 
 class Application:
-    def __init__(self,config,helper=None,sampler=None):
+    def __init__(self,config,helper=None,sampler=None,progress_dir=Path('/run/airlunix-admin')):
         self.config=config;self.helper=helper or Helper();self.sampler=sampler or Sampler(config.get('refresh_s',3),config.get('privacy_mode',False))
+        self.progress_dir=Path(progress_dir)
         self.sessions=Sessions();self.login_limits=collections.OrderedDict();self.jobs={};self.audit=collections.deque(maxlen=32)
-        self.lock=threading.Lock();self.job_slots=threading.BoundedSemaphore(2)
+        self.lock=threading.Lock();self.job_slots=threading.BoundedSemaphore(1)
     def log(self,action,success):
         self.audit.append({'boot_s':round(time.monotonic(),3),'action':action,'success':success})
         emit('security',action,success)
@@ -88,7 +90,7 @@ class Application:
             self.jobs={k:v for k,v in self.jobs.items() if time.monotonic()-v['created']<600}
             if len(self.jobs)>=32:self.job_slots.release();raise APIError(503,'Job limit reached')
             self.jobs[key]={'id':key,'owner':session['id'],'created':time.monotonic(),'state':'pending','action':op}
-        request={**body,'op':op,'user':session['user']['name']}
+        request={**body,'op':op,'user':session['user']['name'],'job_id':key}
         if op=='first_password':request['setup_grant']=session.get('setup_grant')
         def work():
             self.jobs[key]['state']='running'
@@ -167,6 +169,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send(200,app.helper.call({'op':'log_export','grant':session.get('log_grant',''),'user':user,'password':body.get('password')}))
             op={'/api/password':'password','/api/users':'create_user','/api/save':'save',
                 '/api/storage/preview':'storage_preview','/api/storage/apply':'storage_apply',
+                '/api/reboot':'reboot',
                 '/api/storage/replace/preview':'storage_replace_preview',
                 '/api/storage/replace/apply':'storage_replace_apply'}.get(path)
             if not op:raise APIError(404,'Unknown action')
@@ -191,9 +194,17 @@ class Handler(BaseHTTPRequestHandler):
                 'event':params.get('event',[''])[0],'severity':params.get('severity',[''])[0],
                 'cursor':json.loads(params['cursor'][0]) if 'cursor' in params else None}))
         if path.startswith('/api/jobs/'):
-            job=app.jobs.get(path.rsplit('/',1)[-1])
+            job_id=path.rsplit('/',1)[-1];job=app.jobs.get(job_id)
             if not job or job['owner']!=session['id']:raise APIError(404,'Job unavailable')
-            return self.send(200,{k:v for k,v in job.items() if k!='owner'})
+            result={k:v for k,v in job.items() if k!='owner'}
+            if re.fullmatch(r'[0-9a-f]{32}',job_id):
+                try:
+                    progress_path=app.progress_dir/('progress-'+job_id+'.json')
+                    if progress_path.stat().st_size<=2048:
+                        progress=json.loads(progress_path.read_text())
+                        if progress.get('job_id')==job_id:result['progress']=progress
+                except (OSError,ValueError):pass
+            return self.send(200,result)
         raise APIError(404,'Not found')
     def handle_api(self,post=False):
         try:self.run_request(post)

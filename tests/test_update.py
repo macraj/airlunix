@@ -61,11 +61,14 @@ class UpdateTests(unittest.TestCase):
         manifest={'version':'test','image':{'bytes':size,'sha256':hashlib.sha256(raw).hexdigest()},
                   'download':{'url':'https://github.com/macraj/airlunix/releases/download/v/a.img.xz','bytes':len(packed),
                               'sha256':hashlib.sha256(packed).hexdigest(),'compression':'xz'}}
-        tracemalloc.start()
+        progress=[];tracemalloc.start()
         with patch('airlunix.update.fcntl.ioctl',return_value=0):
-            result=stream_image(target,manifest,'d'*32,open_url=lambda *a,**k:Response(packed),sys_block=sysblock)
+            result=stream_image(target,manifest,'d'*32,open_url=lambda *a,**k:Response(packed),sys_block=sysblock,
+                                progress=lambda *args:progress.append(args))
         _,peak=tracemalloc.get_traced_memory();tracemalloc.stop()
         self.assertTrue(result['success']);self.assertEqual(target.read_bytes()[:size],raw)
+        self.assertIn('download_write',{x[0] for x in progress})
+        self.assertIn('verify_readback',{x[0] for x in progress})
         self.assertLess(peak,8*1024*1024)
 
     def test_partial_or_corrupt_download_is_never_success(self):

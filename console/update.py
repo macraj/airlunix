@@ -160,7 +160,7 @@ def stream_image(target,manifest,expected_cid,open_url=None,sys_block=Path('/sys
                     if decompressor.eof:
                         if decompressor.unused_data:raise UpdateError('Compressed release contains trailing data')
                         break
-                if progress:progress(received,download['bytes'])
+                if progress:progress('download_write',received,download['bytes'])
             if response.read(1):raise UpdateError('Release download exceeds its declared size')
             if not decompressor.eof or written!=image['bytes'] or len(prefix)<65536:
                 raise UpdateError('Decompressed image ended before its declared size')
@@ -169,10 +169,12 @@ def stream_image(target,manifest,expected_cid,open_url=None,sys_block=Path('/sys
     if digest.hexdigest()!=image['sha256']:raise UpdateError('Downloaded image SHA-256 does not match the release manifest')
     verify=hashlib.sha256();remaining=image['bytes']
     with Path(target).open('rb',buffering=0) as source:
+        verified=0
         while remaining:
             chunk=source.read(min(1024*1024,remaining))
             if not chunk:raise UpdateError('Replacement media readback ended early')
-            verify.update(chunk);remaining-=len(chunk)
+            verify.update(chunk);remaining-=len(chunk);verified+=len(chunk)
+            if progress:progress('verify_readback',verified,image['bytes'])
     if verify.hexdigest()!=image['sha256']:raise UpdateError('Replacement media readback SHA-256 does not match')
     with Path(target).open('rb',buffering=0) as disk:
         try:fcntl.ioctl(disk,0x125f)

@@ -30,3 +30,17 @@ The earlier base-system observation was interrupted by an accidental power
 disconnect confirmed by the owner. Earlier exported samples remain valid for
 their observation period; they do not constitute a complete 24-hour result.
 No console deployment was made to that board.
+
+
+## 0.3.1-logging-rc7 candidate changes
+
+- Replacement-card confirmation remains visible as a bounded progress dialog:
+  validating the target, streaming the release while writing the card, reading
+  back and verifying the image, then saving selected configuration. The
+  download/write stage is intentionally combined because the device streams
+  decompressed data directly to the card without holding the image in RAM.
+- The System page provides an administrator-only reboot action with fresh
+  authentication and typed `REBOOT` confirmation. It never saves automatically,
+  warns about unsaved RAM changes, and refuses while the selected SD partition is
+  mounted or another administrative job is active.
+- No new packages, background collector, routine SD logging, or automatic save.

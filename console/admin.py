@@ -133,7 +133,7 @@ class Admin:
     def call(self,request):
         op=request.get('op')
         operation=op if isinstance(op,str) and len(op)<40 else 'invalid'
-        sensitive=operation in ('save','password','create_user','storage_preview','storage_apply','storage_replace_preview','storage_replace_apply','first_password','bootstrap_login')
+        sensitive=operation in ('save','password','create_user','storage_preview','storage_apply','storage_replace_preview','storage_replace_apply','reboot','first_password','bootstrap_login')
         correlation=secrets.token_hex(8)
         if sensitive:emit('administration',operation+'_start',actor=request.get('user',''),operation=correlation)
         try:
@@ -144,6 +144,32 @@ class Admin:
             emit('administration' if sensitive else 'security',operation+'_failed',False,
                  actor=request.get('user',''),reason=type(exc).__name__,operation=correlation)
             raise
+
+    def publish_job_progress(self,job_id,phase,done,total):
+        if not isinstance(job_id,str) or not re.fullmatch(r'[0-9a-f]{32}',job_id):return
+        if phase not in ('validating','download_write','verify_readback','configuration_save','complete'):return
+        if not isinstance(done,int) or not isinstance(total,int) or total<1:return
+        directory=Path('/run/airlunix-admin')
+        target=directory/('progress-'+job_id+'.json')
+        record={'job_id':job_id,'phase':phase,'done':max(0,min(done,total)),
+                'total':total,'updated_boot_s':round(time.monotonic(),3)}
+        temporary=directory/('.progress-'+job_id+'-'+secrets.token_hex(4))
+        fd=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o640)
+        try:
+            os.fchown(fd,0,directory.stat().st_gid)
+            with os.fdopen(fd,'w') as stream:
+                fd=-1;json.dump(record,stream,separators=(',',':'));stream.write('\n')
+            os.replace(temporary,target)
+        finally:
+            if fd>=0:os.close(fd)
+            try:temporary.unlink()
+            except FileNotFoundError:pass
+        # A rapid sequence of short-lived jobs cannot grow the tmpfs directory
+        # without bound. Keep only the most recent 32 progress snapshots.
+        files=sorted(directory.glob('progress-*.json'),key=lambda p:p.stat().st_mtime,reverse=True)
+        for stale in files[32:]:
+            try:stale.unlink()
+            except FileNotFoundError:pass
 
     def _call(self,request):
         op=request.get('op')
@@ -247,11 +273,11 @@ class Admin:
         if op=='login':
             user=self.authenticate(request.get('user'),request.get('password'))
             self.log(user['name'],'login',True);return user
-        if op not in ('users','save_status','password','create_user','save','storage','storage_preview','storage_apply','storage_replace_status','storage_replace_catalog','storage_replace_preview','storage_replace_apply'):
+        if op not in ('users','save_status','password','create_user','save','reboot','storage','storage_preview','storage_apply','storage_replace_status','storage_replace_catalog','storage_replace_preview','storage_replace_apply'):
             raise ValueError('Unsupported operation')
         # All mutations require fresh system-password authentication. No bearer
         # token obtained by compromising the unprivileged daemon grants root.
-        if op in ('password','create_user','save','storage_preview','storage_apply','storage_replace_preview','storage_replace_apply'):
+        if op in ('password','create_user','save','reboot','storage_preview','storage_apply','storage_replace_preview','storage_replace_apply'):
             user=self.authenticate(request.get('user'),request.get('password'))
             if op!='password' and not user['administrator']:raise Denied('Administrator authentication required')
         else:
@@ -278,6 +304,21 @@ class Admin:
             (self.state/'saved-fingerprint').write_text(self.baseline)
             (self.state/'last-save.json').write_text(json.dumps(self.last_save))
             self.log(name,op,True);return {**result,'last_successful_save':self.last_save}
+        if op=='reboot':
+            if request.get('confirmation')!='REBOOT':raise Denied('Type REBOOT to confirm')
+            if self.mounted():raise StorageError('The selected SD partition is mounted; reboot was not started')
+            unsaved=not hmac.compare_digest(self.fingerprint(),self.baseline)
+            if unsaved and request.get('ack_unsaved') is not True:
+                raise StorageError('RAM changes are unsaved; explicitly confirm they may be lost')
+            def restart():
+                try:subprocess.Popen(['/sbin/reboot'],stdin=subprocess.DEVNULL,
+                                     stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,
+                                     start_new_session=True)
+                except OSError:pass
+            timer=threading.Timer(3.0,restart);timer.daemon=True;timer.start()
+            self.log(name,op,True)
+            return {'success':True,'reboot_started':True,'unsaved_changes':unsaved,
+                    'automatic_save':False,'delay_s':3}
         if op=='storage':
             # Monitoring never mounts or rereads the SD. Kernel-maintained
             # boundaries/counters and a boot-time filesystem snapshot are used.
@@ -313,20 +354,32 @@ class Admin:
             if not record or record.get('kind')!='replacement' or record['user']!=name or time.monotonic()>record['expires']:
                 raise StorageError('Replacement preview expired or was already used')
             if request.get('confirmation')!=record['confirmation']:raise StorageError('Replacement confirmation does not match')
+            job_id=request.get('job_id')
+            last_progress=[None,None]
+            def report(phase,done,total):
+                percent=(max(0,min(done,total))*100)//total if total else 0
+                if last_progress==[phase,percent]:return
+                last_progress[:]=[phase,percent]
+                try:self.publish_job_progress(job_id,phase,done,total)
+                except OSError:pass # Progress reporting must never block card preparation.
+            report('validating',0,1)
             candidate=record['candidate'];current=replacement_candidates(boot_identity())
             if len(current)!=1 or current[0]['cid']!=candidate['cid'] or current[0]['device']!=candidate['device']:
                 raise StorageError('Replacement media changed since preview')
             with storage_lock(self.state/'storage.lock'):
-                result=stream_image(Path(candidate['device']),record['manifest'],candidate['cid'])
+                result=stream_image(Path(candidate['device']),record['manifest'],candidate['cid'],
+                                    progress=report)
                 self.state_device.write_text(result['partition']+'\n')
             # The image is now verified and the shared file lock has been released;
             # save_system reacquires it while copying the current selected state.
+            report('configuration_save',0,1)
             saved=self.persist()
             if not saved.get('success') or not saved.get('sd_unmounted'):
                 raise StorageError('Replacement image is verified, but current configuration was not saved; keep the system powered and retry Save configuration')
             self.baseline=self.fingerprint();self.last_save={'unix_s':time.time(),'boot_s':time.monotonic()}
             (self.state/'saved-fingerprint').write_text(self.baseline)
             (self.state/'last-save.json').write_text(json.dumps(self.last_save))
+            report('complete',1,1)
             self.log(name,op,True)
             return {**result,'sd_unmounted':True,'configuration_saved':True,
                     'last_successful_save':self.last_save,'reboot_ready':True,'durable_immediately':True}

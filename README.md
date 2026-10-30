@@ -74,7 +74,12 @@ manifest for Orange Pi 4 Pro/A733, downloads the `.img.xz` directly on the
 device, decompresses with bounded memory, verifies the compressed and raw
 SHA-256 plus a full media readback, and then saves current selected state. It
 requires fresh administrator authentication and exact physical-card confirmation.
-No browser upload or arbitrary URL is accepted.
+The Web Console keeps a progress dialog open for release download/card writing,
+readback verification and selected-state saving. Download and writing are a
+single streamed stage, so RAM never holds the complete image. No browser upload
+or arbitrary URL is accepted. The System page also offers an authenticated,
+explicitly confirmed reboot; it never saves configuration automatically and
+warns before discarding unsaved RAM changes.
 
 ## Included capabilities and limits
 

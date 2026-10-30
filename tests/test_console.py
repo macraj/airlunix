@@ -66,6 +66,18 @@ class ConsoleTests(unittest.TestCase):
         self.assertFalse(self.accounts.verify('third','changed')['administrator'])
         self.assertFalse(self.call('password',new_password='changed')['saved'])
         self.assertIsNone(self.accounts.verify('operator','initial'))
+    def test_reboot_requires_explicit_confirmation_and_never_saves(self):
+        with self.assertRaises(Denied):self.call('reboot',confirmation='wrong',ack_unsaved=True)
+        with patch('airlunix.admin.threading.Timer') as timer:
+            result=self.call('reboot',confirmation='REBOOT',ack_unsaved=True)
+        self.assertTrue(result['reboot_started']);self.assertFalse(result['automatic_save'])
+        timer.assert_called_once();self.assertEqual(timer.call_args.args[0],3.0)
+        timer.return_value.start.assert_called_once()
+        self.assertFalse(self.saved)
+    def test_reboot_refuses_mounted_sd(self):
+        with patch.object(self.admin,'mounted',return_value=True):
+            with self.assertRaisesRegex(StorageError,'mounted'):
+                self.call('reboot',confirmation='REBOOT',ack_unsaved=True)
     def test_login_throttle_and_bounded_audit(self):
         for _ in range(5):
             with self.assertRaises(Denied):self.call('login',password='wrong')
@@ -233,6 +245,16 @@ class HTTPSecurityTests(unittest.TestCase):
         response=c.getresponse();raw=response.read();status=response.status;cookie=response.getheader('Set-Cookie');c.close()
         return status,json.loads(raw),cookie
     def login(self):return self.request('/api/login',{'user':'preview','password':self.helper.password})
+    def test_job_returns_bounded_replacement_progress(self):
+        _,_,cookie=self.login();token=cookie.split(';',1)[0].split('=',1)[1]
+        session=self.server.app.sessions.get(token);job_id='a'*32
+        self.server.app.jobs[job_id]={'id':job_id,'owner':session['id'],'created':time.monotonic(),'state':'running','action':'storage_replace_apply'}
+        self.server.app.progress_dir=Path(self.temp.name)/'progress';self.server.app.progress_dir.mkdir(exist_ok=True)
+        (self.server.app.progress_dir/f'progress-{job_id}.json').write_text(json.dumps(
+            {'job_id':job_id,'phase':'verify_readback','done':5*1024*1024,'total':20*1024*1024}))
+        status,result,_=self.request('/api/jobs/'+job_id,cookie=cookie)
+        self.assertEqual(status,200);self.assertEqual(result['progress']['phase'],'verify_readback')
+        self.assertEqual(result['progress']['done'],5*1024*1024)
     def test_unauthorized_origin_csrf_logout_and_cookie_flags(self):
         self.assertEqual(self.request('/api/overview')[0],401)
         self.assertEqual(self.request('/api/login',{'user':'preview','password':self.helper.password},origin=False)[0],403)
