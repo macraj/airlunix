@@ -181,6 +181,7 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/save-status':return self.send(200,app.helper.call({'op':'save_status','user':user}))
         if path=='/api/storage':return self.send(200,app.helper.call({'op':'storage','user':user}))
         if path=='/api/storage/replace/status':return self.send(200,app.helper.call({'op':'storage_replace_status','user':user}))
+        if path=='/api/storage/replace/releases':return self.send(200,app.helper.call({'op':'storage_replace_catalog','user':user}))
         if path=='/api/logs':
             if not session['user']['administrator']:raise APIError(403,'Administrator required')
             from urllib.parse import parse_qs

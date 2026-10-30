@@ -13,6 +13,7 @@ table inet host_filter {
 		ip protocol icmp accept
 		meta l4proto ipv6-icmp accept
 		tcp dport 22 ct state new accept
+		iifname "eth0" ip saddr 172.16.20.0/24 tcp dport 8443 ct state new accept
 	}
 
 	chain forward {

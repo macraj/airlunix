@@ -31,12 +31,15 @@ class UpdateTests(unittest.TestCase):
 
     def test_manifest_accepts_only_bounded_official_release(self):
         good=json.dumps(self.manifest()).encode()
-        result=release_manifest(open_url=lambda *a,**k:Response(good))
+        releases=json.dumps([{'tag_name':'v1','name':'1.0.0','assets':[{'name':'airlunix-update.json','browser_download_url':'https://github.com/macraj/airlunix/releases/download/v1/airlunix-update.json'}]}]).encode()
+        responses=[releases,good]
+        result=release_manifest(open_url=lambda *a,**k:Response(responses.pop(0)))
         self.assertEqual(result['version'],'1.0.0');self.assertEqual(result['download']['compression'],'xz')
         for url in ('http://github.com/macraj/airlunix/releases/download/v1/a.img.xz',
                     'https://example.com/a.img.xz','https://github.com/other/airlunix/releases/download/v1/a.img.xz'):
             bad=json.dumps(self.manifest(url)).encode()
-            with self.assertRaises(UpdateError):release_manifest(open_url=lambda *a,raw=bad,**k:Response(raw))
+            responses[:]=[releases,bad]
+            with self.assertRaises(UpdateError):release_manifest(open_url=lambda *a,**k:Response(responses.pop(0)))
 
     def test_candidate_excludes_boot_cid_and_mounted_media(self):
         sysblock=self.root/'sys';dev=self.root/'dev';sysblock.mkdir();dev.mkdir();mounts=self.root/'mounts'

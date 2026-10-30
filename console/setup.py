@@ -4,6 +4,7 @@ import grp
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import ssl
 import subprocess
@@ -35,7 +36,8 @@ def issue_first_login(folder,administrator=None):
 def main():
     if os.geteuid()!=0:raise SystemExit('Run through authenticated doas')
     p=argparse.ArgumentParser(description='Provision Airlunix Web Console HTTPS locally; does not save automatically')
-    p.add_argument('--bind',default='127.0.0.1',choices=['127.0.0.1'])
+    p.add_argument('--bind',default='127.0.0.1',choices=['127.0.0.1','0.0.0.0'])
+    p.add_argument('--lan-address',help='Interface address included in TLS certificate and allowed management hosts')
     p.add_argument('--admin',help='Provisioned administrator for passwordless first browser login')
     p.add_argument('--issue-first-login',action='store_true',help='Issue only a volatile first-login link for already provisioned HTTPS')
     args=p.parse_args()
@@ -44,8 +46,8 @@ def main():
         folder=Path('/etc/airlunix/selected/web')
         if not (folder/'config.json').exists():raise SystemExit('HTTPS has not been provisioned')
         issue_first_login(folder,args.admin);return
-    # Preview deliberately supports only an SSH tunnel. No firewall opening or
-    # all-network listener is inferred from enabling the web service.
+    if args.bind=='0.0.0.0' and (not args.lan_address or not re.fullmatch(r'(?:\d{1,3}\.){3}\d{1,3}',args.lan_address)):
+        raise SystemExit('--lan-address with the intended management IPv4 address is required for LAN binding')
     group=grp.getgrnam('airweb').gr_gid
     parent=Path('/etc/airlunix/selected');parent.mkdir(parents=True,exist_ok=True);parent.chmod(0o711)
     folder=parent/'web';folder.mkdir(mode=0o750,exist_ok=True);os.chown(folder,0,group)
@@ -54,11 +56,13 @@ def main():
     if not key.exists():
         subprocess.run(['/usr/bin/openssl','req','-x509','-newkey','ec','-pkeyopt','ec_paramgen_curve:P-256',
                         '-sha256','-days','365','-nodes','-subj','/CN=airlunix.local',
-                        '-addext','subjectAltName=DNS:airlunix.local,DNS:localhost,IP:127.0.0.1',
+                        '-addext','subjectAltName=DNS:airlunix.local,DNS:localhost,IP:127.0.0.1'+(',IP:'+args.lan_address if args.lan_address else ''),
                         '-keyout',str(key),'-out',str(cert)],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=20)
     for f in (key,cert):os.chown(f,0,group);f.chmod(0o640)
+    allowed=['127.0.0.1:8443','localhost:8443','airlunix.local:8443']
+    if args.lan_address:allowed.append(args.lan_address+':8443')
     config={'enabled':True,'bind':args.bind,'port':8443,'refresh_s':3,
-            'allowed_hosts':['127.0.0.1:8443','localhost:8443','airlunix.local:8443'],
+            'allowed_hosts':allowed,
             'certificate':str(cert),'private_key':str(key)}
     path=folder/'config.json';path.write_text(json.dumps(config,indent=2)+'\n');os.chown(path,0,group);path.chmod(0o640)
     der=ssl.PEM_cert_to_DER_cert(cert.read_text())

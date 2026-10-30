@@ -13,7 +13,7 @@ import urllib.parse
 import urllib.request
 
 REPOSITORY='macraj/airlunix'
-MANIFEST_URL='https://github.com/macraj/airlunix/releases/latest/download/airlunix-update.json'
+RELEASES_URL='https://api.github.com/repos/macraj/airlunix/releases?per_page=20'
 MAX_MANIFEST=16384
 MIN_IMAGE=256*1024*1024
 MAX_IMAGE=1_000_000_000
@@ -22,7 +22,7 @@ ALLOWED_IMAGE=re.compile(r'https://github\.com/macraj/airlunix/releases/download
 class UpdateError(ValueError):pass
 
 class SafeRedirect(urllib.request.HTTPRedirectHandler):
-    hosts={'github.com','release-assets.githubusercontent.com','objects.githubusercontent.com'}
+    hosts={'api.github.com','github.com','release-assets.githubusercontent.com','objects.githubusercontent.com'}
     def redirect_request(self,req,fp,code,msg,headers,newurl):
         target=urllib.parse.urlsplit(newurl)
         if target.scheme!='https' or target.hostname not in self.hosts:
@@ -31,12 +31,49 @@ class SafeRedirect(urllib.request.HTTPRedirectHandler):
 
 def opener():return urllib.request.build_opener(SafeRedirect())
 
-def release_manifest(url=MANIFEST_URL,open_url=None):
+def release_options(open_url=None):
     fetch=open_url or opener().open
     try:
-        with fetch(urllib.request.Request(url,headers={'User-Agent':'Airlunix-update/1','Accept':'application/json'}),timeout=20) as response:
-            raw=response.read(MAX_MANIFEST+1)
+        with fetch(urllib.request.Request(RELEASES_URL,headers={'User-Agent':'Airlunix-update/1','Accept':'application/vnd.github+json'}),timeout=20) as response:raw=response.read(128*1024+1)
+    except (OSError,urllib.error.URLError) as exc:raise UpdateError('No installable Airlunux release is currently reachable') from exc
+    if len(raw)>128*1024:raise UpdateError('GitHub release list exceeds the size limit')
+    try:releases=json.loads(raw)
+    except (UnicodeDecodeError,json.JSONDecodeError) as exc:raise UpdateError('GitHub release list is invalid') from exc
+    if not isinstance(releases,list):raise UpdateError('GitHub release list is invalid')
+    options=[]
+    for release in releases:
+        if not isinstance(release,dict) or release.get('draft'):continue
+        if any(isinstance(a,dict) and a.get('name')=='airlunix-update.json' for a in release.get('assets',[])):
+            options.append({'tag':release.get('tag_name'),'name':release.get('name') or release.get('tag_name'),
+                            'prerelease':bool(release.get('prerelease')),'published_at':release.get('published_at')})
+    return options
+
+def release_manifest(version=None,open_url=None):
+    fetch=open_url or opener().open
+    try:
+        with fetch(urllib.request.Request(RELEASES_URL,headers={'User-Agent':'Airlunix-update/1','Accept':'application/vnd.github+json'}),timeout=20) as response:
+            raw=response.read(128*1024+1)
     except (OSError,urllib.error.URLError) as exc:raise UpdateError('No installable Airlunix release is currently reachable') from exc
+    if len(raw)>128*1024:raise UpdateError('GitHub release list exceeds the size limit')
+    try:data=json.loads(raw)
+    except (UnicodeDecodeError,json.JSONDecodeError) as exc:raise UpdateError('Release manifest is invalid') from exc
+    if not isinstance(data,list):raise UpdateError('GitHub release list is invalid')
+    candidates=[]
+    for release in data:
+        if not isinstance(release,dict) or release.get('draft'):continue
+        assets=release.get('assets',[])
+        asset=next((a for a in assets if isinstance(a,dict) and a.get('name')=='airlunix-update.json'),None)
+        if asset and isinstance(asset.get('browser_download_url'),str):candidates.append((release,asset))
+    if version is not None:candidates=[item for item in candidates if item[0].get('tag_name')==version or item[0].get('name')==version]
+    if not candidates:raise UpdateError('No installable Airlunix release is currently reachable')
+    release,asset=candidates[0]
+    manifest_url=asset['browser_download_url']
+    if not re.fullmatch(r'https://github\.com/macraj/airlunix/releases/download/[^/]+/airlunix-update\.json',manifest_url):
+        raise UpdateError('Release manifest URL is outside the approved repository')
+    try:
+        with fetch(urllib.request.Request(manifest_url,headers={'User-Agent':'Airlunix-update/1','Accept':'application/json'}),timeout=20) as response:
+            raw=response.read(MAX_MANIFEST+1)
+    except (OSError,urllib.error.URLError) as exc:raise UpdateError('Selected release manifest could not be downloaded') from exc
     if len(raw)>MAX_MANIFEST:raise UpdateError('Release manifest exceeds the size limit')
     try:data=json.loads(raw)
     except (UnicodeDecodeError,json.JSONDecodeError) as exc:raise UpdateError('Release manifest is invalid') from exc
@@ -54,8 +91,8 @@ def release_manifest(url=MANIFEST_URL,open_url=None):
         raise UpdateError('Release download SHA-256 is invalid')
     if not isinstance(download.get('url'),str) or not ALLOWED_IMAGE.fullmatch(download['url']):
         raise UpdateError('Release image URL is outside the approved repository')
-    return {'version':data['version'],'published_at':data.get('published_at'),'source_commit':data.get('source_commit'),
-            'image':image,'download':download}
+    return {'version':data['version'],'tag':release['tag_name'],'published_at':data.get('published_at'),
+            'source_commit':data.get('source_commit'),'image':image,'download':download}
 
 def boot_identity(path=Path('/run/airlunix-boot-media.json')):
     try:data=json.loads(path.read_text())

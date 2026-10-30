@@ -17,7 +17,7 @@ import subprocess
 import threading
 import time
 from .storage import Media, StorageError, storage_lock
-from .update import UpdateError, boot_identity, release_manifest, replacement_candidates, stream_image
+from .update import UpdateError, boot_identity, release_manifest, release_options, replacement_candidates, stream_image
 from .process import run as bounded_run
 from .logging_ram import emit, install_output, Collector
 
@@ -247,7 +247,7 @@ class Admin:
         if op=='login':
             user=self.authenticate(request.get('user'),request.get('password'))
             self.log(user['name'],'login',True);return user
-        if op not in ('users','save_status','password','create_user','save','storage','storage_preview','storage_apply','storage_replace_status','storage_replace_preview','storage_replace_apply'):
+        if op not in ('users','save_status','password','create_user','save','storage','storage_preview','storage_apply','storage_replace_status','storage_replace_catalog','storage_replace_preview','storage_replace_apply'):
             raise ValueError('Unsupported operation')
         # All mutations require fresh system-password authentication. No bearer
         # token obtained by compromising the unprivileged daemon grants root.
@@ -291,10 +291,13 @@ class Admin:
                               'Remove the unmounted boot card and insert exactly one replacement microSD' if not candidates else
                               'More than one replacement target is present'),
                     'candidate':({k:candidates[0][k] for k in ('device','model','bytes','cid')} if len(candidates)==1 else None)}
+        if op=='storage_replace_catalog':
+            if not user['administrator']:raise Denied('Administrator required')
+            return {'releases':release_options()}
         if op=='storage_replace_preview':
             boot=boot_identity();candidates=replacement_candidates(boot)
             if len(candidates)!=1:raise StorageError('Insert exactly one replacement microSD after removing the unmounted boot card')
-            manifest=release_manifest();candidate=candidates[0]
+            manifest=release_manifest(request.get('version'));candidate=candidates[0]
             if candidate['bytes']<manifest['image']['bytes']:raise StorageError('Replacement card is smaller than the published image')
             token=secrets.token_urlsafe(24);confirmation='REPLACE-'+candidate['cid'][-8:].upper()
             with self.lock:
