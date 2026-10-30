@@ -69,6 +69,7 @@ for source in sorted([repo / 'configs/distribution.json',
 buildid = digest.hexdigest()[:16]
 write('etc/airlunix-release', f'{cfg["name"]} {cfg["version"]} — {cfg["profile"]}\nBuild configuration: {buildid}\n')
 write('etc/inittab', '::sysinit:/usr/sbin/airlunix-openrc sysinit\n::sysinit:/usr/sbin/airlunix-openrc boot\n::wait:/usr/sbin/airlunix-openrc default\ntty1::respawn:/usr/sbin/airlunix-status\ntty2::respawn:/usr/sbin/airlunix-console tty2\nttyS7::respawn:/usr/sbin/airlunix-console ttyS7\n::ctrlaltdel:/sbin/reboot\n::shutdown:/usr/sbin/airlunix-openrc shutdown\n')
+write('etc/nftables.nft', (repo / 'configs/nftables.nft').read_text())
 for name, dest in {'init': 'init', 'sshd_config': 'etc/ssh/sshd_config',
                    'web.initd': 'etc/init.d/airlunix-web',
                    'admin.initd': 'etc/init.d/airlunix-admin',
