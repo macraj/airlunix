@@ -53,11 +53,15 @@ def main():
     folder=parent/'web';folder.mkdir(mode=0o750,exist_ok=True);os.chown(folder,0,group)
     key=folder/'tls.key';cert=folder/'tls.crt'
     if key.exists()!=cert.exists():raise SystemExit('Incomplete TLS state; inspect manually before replacing keys')
-    if not key.exists():
+    renew=args.lan_address and cert.exists() and subprocess.run(['/usr/bin/openssl','x509','-in',str(cert),'-noout','-checkip',args.lan_address],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode!=0
+    if not key.exists() or renew:
+        key_tmp=key.with_suffix('.key.new');cert_tmp=cert.with_suffix('.crt.new')
         subprocess.run(['/usr/bin/openssl','req','-x509','-newkey','ec','-pkeyopt','ec_paramgen_curve:P-256',
                         '-sha256','-days','365','-nodes','-subj','/CN=airlunix.local',
                         '-addext','subjectAltName=DNS:airlunix.local,DNS:localhost,IP:127.0.0.1'+(',IP:'+args.lan_address if args.lan_address else ''),
-                        '-keyout',str(key),'-out',str(cert)],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=20)
+                        '-keyout',str(key_tmp),'-out',str(cert_tmp)],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=20)
+        if key.exists():key_tmp.replace(key);cert_tmp.replace(cert)
+        else:key_tmp.replace(key);cert_tmp.replace(cert)
     for f in (key,cert):os.chown(f,0,group);f.chmod(0o640)
     allowed=['127.0.0.1:8443','localhost:8443','airlunix.local:8443']
     if args.lan_address:allowed.append(args.lan_address+':8443')
